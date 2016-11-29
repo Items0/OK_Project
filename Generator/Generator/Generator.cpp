@@ -100,27 +100,31 @@ int main()
 				suma_czasow_m2 += czas_operacji1;
 			}
 		}
+		if (suma_czasow_m1 > RAND_MAX || suma_czasow_m2 > RAND_MAX) { cout << "Uwazaj, Losowanie z przedzialu < RAND_MAX, bledy !" << endl; } // potencjalne bledy, wiem w jakim przedziale jestem
 		tab[1].assign(suma_czasow_m1, 0);
 		tab[2].assign(suma_czasow_m2, 0);
-		for (int i = 1; i <= liczba_przerw; i++)
-		{
-			nr_maszyny = 1 + rand() % 2;
-			wyn << i << " " << nr_maszyny << " ";
+		for (int i = 1; i <= liczba_przerw; i++) // k przerw dla 1 maszyny
+		{	
+			wyn << i << " 1 ";
 			czas_przerwy = min_czas_przerwy + rand() % (1 + max_czas_przerwy - min_czas_przerwy);
 			wyn << czas_przerwy << " ";
-			if (suma_czasow_m1 > RAND_MAX || suma_czasow_m2 > RAND_MAX) { cout << "Uwazaj, Losowanie z przedzialu < RAND_MAX, bledy !" << endl; } // potencjalne bledy, wiem w jakim przedziale jestem
 			do
 			{
-				if (nr_maszyny == 1)
-				{
 					czas_startu_przerwy = rand() % suma_czasow_m1;
-				}
-				else
-				{
-					czas_startu_przerwy = rand() % suma_czasow_m2;
-				}
 			} 
-			while (porownaj(czas_startu_przerwy, czas_przerwy, nr_maszyny));
+			while (porownaj(czas_startu_przerwy, czas_przerwy, 1));
+			wyn << czas_startu_przerwy << endl;
+		}
+		for (int i = liczba_przerw + 1; i <= 2 * liczba_przerw; i++) // k przerw dla 2 maszyny
+		{
+			wyn << i << " 2 ";
+			czas_przerwy = min_czas_przerwy + rand() % (1 + max_czas_przerwy - min_czas_przerwy);
+			wyn << czas_przerwy << " ";
+			do
+			{
+				czas_startu_przerwy = rand() % suma_czasow_m2;
+			}
+			while (porownaj(czas_startu_przerwy, czas_przerwy, 2));
 			wyn << czas_startu_przerwy << endl;
 		}
 		wyn.close();
