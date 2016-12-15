@@ -25,13 +25,13 @@ vector < vector <int> > tab(3); //tab[0] nieuzywany
 bool porownaj(int czas_startu, int czas_trwania, int nr)
 {
 	bool wartosc = false;
-	if (czas_startu + czas_trwania >= tab[nr].size())
+	if (czas_startu + czas_trwania > tab[nr].size())
 	{
 		wartosc = true;
 	}
 	else
 	{
-		for (int i = czas_startu; i <= czas_startu + czas_trwania; i++)
+		for (int i = czas_startu; i < czas_startu + czas_trwania; i++)
 		{
 			if (tab[nr][i])
 			{
@@ -41,7 +41,7 @@ bool porownaj(int czas_startu, int czas_trwania, int nr)
 		}
 		if (wartosc == false)
 		{
-			for (int i = czas_startu; i <= czas_startu + czas_trwania; i++)
+			for (int i = czas_startu; i < czas_startu + czas_trwania; i++)
 			{
 				tab[nr][i] = 1;
 			}
@@ -53,7 +53,7 @@ bool porownaj(int czas_startu, int czas_trwania, int nr)
 int main()
 {
 	srand(time(NULL));
-	fstream uchwyt("../instancje.txt", ios::in);
+	fstream uchwyt("../../InstancjeGenerowanie.txt", ios::in);
 	fstream wyn;
 	
 	int numer_instancji;
@@ -77,9 +77,9 @@ int main()
 	{
 		cout << numer_instancji << " " << liczba_zadan << " " << min_czas_operacji << " " << max_czas_operacji << " " << wspolcznynnik_przerw << " " <<  min_czas_przerwy << " " << max_czas_przerwy << endl;
 		liczba_przerw = liczba_zadan * wspolcznynnik_przerw;
-		nazwa = "../Inst/" + to_string(numer_instancji) + ".txt";
+		nazwa = "../../Instancje/" + to_string(numer_instancji) + ".txt";
 		wyn.open(nazwa, ios::out);
-		wyn << numer_instancji << endl;
+		//wyn << numer_instancji << endl;
 		wyn << liczba_zadan << endl;
 		for (int i = 0; i < liczba_zadan; i++)
 		{
@@ -128,7 +128,11 @@ int main()
 			wyn << czas_startu_przerwy << endl;
 		}
 		wyn.close();
+		wyn.open("../../LiczbaInstancji.txt", ios::out); // aby otrzymac ostatni numer instancji, wykorzystywany w Program2
+		wyn << numer_instancji;
+		wyn.close();
 	}
+
 	_getch();
 	return 0;
 }
