@@ -27,6 +27,15 @@ void display(vector <obiekt> &m, string nazwa)
 	_getch();
 }
 
+//void update(vector <obiekt> &m)
+//{
+//	m[0].czas_startu = 0;
+//	m[0].czas
+//	for (int i = 1; i < m.size(); i++)
+//	{
+//		m[i].czas
+//	}
+//}
 int main()
 {
 	string nazwa = "../../Instancje/";
@@ -79,6 +88,10 @@ int main()
 		uchwyt.close();
 		display(m1, "M1");
 		display(m2, "M2");
+		/*for (int i = 1; i < m1.size(); i++)
+		{
+			m1[i].czas_startu = m1[i-1].czas_startu
+		}*/
 		m1.clear();
 		m2.clear();
 	}

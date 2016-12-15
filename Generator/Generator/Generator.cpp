@@ -69,14 +69,16 @@ int main()
 	int czas_operacji2;
 	int czas_przerwy;
 	int czas_startu_przerwy;
-	int suma_czasow_m1 = 0; // do wyznaczania odpowiednich przerw
-	int suma_czasow_m2 = 0;
+	int suma_czasow_m1; // do wyznaczania odpowiednich przerw
+	int suma_czasow_m2;
 	int nr_maszyny; // jako arg funkcji sprawdzajacej
 	string nazwa;
 	while (uchwyt >> numer_instancji >> liczba_zadan >> min_czas_operacji >> max_czas_operacji >> wspolcznynnik_przerw >> min_czas_przerwy >> max_czas_przerwy)
 	{
 		cout << numer_instancji << " " << liczba_zadan << " " << min_czas_operacji << " " << max_czas_operacji << " " << wspolcznynnik_przerw << " " <<  min_czas_przerwy << " " << max_czas_przerwy << endl;
 		liczba_przerw = liczba_zadan * wspolcznynnik_przerw;
+		suma_czasow_m1 = 0;
+		suma_czasow_m2 = 0;
 		nazwa = "../../Instancje/" + to_string(numer_instancji) + ".txt";
 		wyn.open(nazwa, ios::out);
 		//wyn << numer_instancji << endl;
