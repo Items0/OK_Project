@@ -7,7 +7,8 @@
 #include <iostream>
 #include <vector>
 #include "obiekt.h"
-#include <conio.h>
+#include <conio.h> //getch
+#include <algorithm> // sort
 using namespace std;
 
 void display(vector <obiekt> &m, string nazwa)
@@ -27,6 +28,21 @@ void display(vector <obiekt> &m, string nazwa)
 	_getch();
 }
 
+//int zwroc_index(vector <obiekt> &m, int start)
+//{
+//	if (m.size() == 0)
+//	{
+//		return 0;
+//	}
+//	else
+//	{
+//		int i;
+//		for (i = 0; i < m.size() && m[i].czas_startu < start; i++);
+//		return i;
+//	}
+//}
+
+
 //void update(vector <obiekt> &m)
 //{
 //	m[0].czas_startu = 0;
@@ -36,6 +52,11 @@ void display(vector <obiekt> &m, string nazwa)
 //		m[i].czas
 //	}
 //}
+
+bool compare(obiekt a, obiekt b)
+{
+	return (a.czas_startu < b.czas_startu);	
+}
 int main()
 {
 	string nazwa = "../../Instancje/";
@@ -44,6 +65,8 @@ int main()
 	fstream wynik;
 	vector <obiekt> m1; //maszyna 1
 	vector <obiekt> m2; //maszyna 2
+	vector <obiekt> m1_operacje; //operacje dla m1
+	vector <obiekt> m2_operacje; //operacje dla m2
 	int liczba_instancji;
 	int liczba_operacji;
 	int czas_operacji1;
@@ -65,13 +88,13 @@ int main()
 			uchwyt >> czas_operacji1 >> czas_operacji2 >> nmdop1 >> nmdop2;
 			if (nmdop1 == 1) // operacja pierwsza na pierwszej maszynie
 			{
-				m1.emplace_back(k, czas_operacji1);
-				m2.emplace_back(k, czas_operacji2);
+				m1_operacje.emplace_back(k, czas_operacji1);
+				m2_operacje.emplace_back(k, czas_operacji2);
 			}
 			else
 			{ 
-				m1.emplace_back(k, czas_operacji2);
-				m2.emplace_back(k, czas_operacji1);
+				m1_operacje.emplace_back(k, czas_operacji2);
+				m2_operacje.emplace_back(k, czas_operacji1);
 			}
 		}
 		while (uchwyt >> numer_przerwy >> przerwa_maszyna >> czas_przerwy >> start_przerwy)
@@ -86,12 +109,10 @@ int main()
 			}
 		}
 		uchwyt.close();
+		sort(m1.begin(), m1.end(), compare);
+		sort(m2.begin(), m2.end(), compare);
 		display(m1, "M1");
 		display(m2, "M2");
-		/*for (int i = 1; i < m1.size(); i++)
-		{
-			m1[i].czas_startu = m1[i-1].czas_startu
-		}*/
 		m1.clear();
 		m2.clear();
 	}
