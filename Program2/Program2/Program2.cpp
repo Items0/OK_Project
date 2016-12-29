@@ -7,6 +7,8 @@
 #include <iostream>
 #include <vector>
 #include "obiekt.h"
+#include <ctime> // time
+#include <cstdlib> // rand, srand
 #include <conio.h> //getch
 #include <algorithm> // sort
 using namespace std;
@@ -18,7 +20,7 @@ void display(vector <obiekt> &m, string nazwa)
 	{
 		if (m[i].typ == "op")
 		{
-			cout << m[i].numer << " " << m[i].czas_instancji << endl;
+			cout << m[i].numer << " " << m[i].czas_startu << " " << m[i].czas_trwania << endl;
 		}
 		else if (m[i].typ == "maint")
 		{
@@ -26,6 +28,54 @@ void display(vector <obiekt> &m, string nazwa)
 		}
 	}
 	_getch();
+}
+
+void update(vector <obiekt> &m)
+{
+	for (int i = 1; i < m.size(); i++)
+	{
+		if (m[i].typ == "op") // moze zmieniac tylko czasy operacji
+		{
+			m[i].czas_startu = m[i - 1].czas_konca;
+			m[i].czas_konca = m[i].czas_startu + m[i].czas_trwania;
+		}
+	}
+}
+
+void insert_m1(vector <obiekt> &operacje, vector <obiekt> &maszyna) //losuje obiekt, szuka dla niego pierwszego wolnego miejsca
+{
+	srand(time(NULL));
+	int x;
+	int i;
+	do
+	{	
+		x = rand() % operacje.size(); //losowy z losowego generatora
+		if (operacje[x].czas_instancji <= maszyna[0].czas_startu) // trafil w pierwszy przedzial <0, czas startu 1-szego>
+		{
+			operacje[x].czas_startu = 0;
+			operacje[x].czas_konca = operacje[x].czas_trwania = operacje[x].czas_instancji;
+			maszyna.insert(maszyna.begin(), operacje[x]);
+		}
+		else
+		{
+			for (i = 1; i < maszyna.size(); i++)
+			{
+				if (operacje[x].czas_instancji <= maszyna[i].czas_startu - maszyna[i - 1].czas_konca)
+				{
+					operacje[x].czas_trwania = operacje[x].czas_instancji;
+					maszyna.insert(maszyna.begin() + i, operacje[x]);
+					break;
+				}
+			}
+			if (i == maszyna.size()) //przelecial i nie zmiescil, wiec dodaje na koniec
+			{
+				operacje[x].czas_trwania = operacje[x].czas_instancji;
+				maszyna.push_back(operacje[x]);
+			}
+		}		
+		operacje.erase(operacje.begin() + x);
+		update(maszyna);
+	} while (operacje.size() != 0);
 }
 
 //int zwroc_index(vector <obiekt> &m, int start)
@@ -43,15 +93,7 @@ void display(vector <obiekt> &m, string nazwa)
 //}
 
 
-//void update(vector <obiekt> &m)
-//{
-//	m[0].czas_startu = 0;
-//	m[0].czas
-//	for (int i = 1; i < m.size(); i++)
-//	{
-//		m[i].czas
-//	}
-//}
+
 
 bool compare(obiekt a, obiekt b)
 {
@@ -113,6 +155,9 @@ int main()
 		sort(m2.begin(), m2.end(), compare);
 		display(m1, "M1");
 		display(m2, "M2");
+		insert_m1(m1_operacje, m1);
+		display(m1, "M1");
+		//insert(m2_operacje, m2);
 		m1.clear();
 		m2.clear();
 	}
