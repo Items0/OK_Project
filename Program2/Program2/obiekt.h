@@ -13,7 +13,7 @@ public:
 	int czas_z_kara; //only op
 	int maint_kara; //only maint, czas konca poprzedniego wznawianego zadania
 	int nr_operacji;
-	
+	bool ruszaj;
 	string typ; //  {op, maint, idle} a'la enum
 	obiekt();
 	obiekt(int numer, int czas_instancji, int nr_operacji);

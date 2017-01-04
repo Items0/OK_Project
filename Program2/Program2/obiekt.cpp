@@ -15,6 +15,7 @@ obiekt::obiekt(int numer, int czas_instancji, int nr_operacji)
 	this->typ = "op";
 	this->maint_kara = 0;
 	this->nr_operacji = nr_operacji;
+	this->ruszaj = true;
 	// czas_trwania i czas_konca - trzeba wybrac
 }
 
