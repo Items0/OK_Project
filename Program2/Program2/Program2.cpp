@@ -122,7 +122,6 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 					m1_operacje[x].czas_startu = 0;
 					m1_operacje[x].czas_konca = m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
 					maszyna1.insert(maszyna1.begin(), m1_operacje[x]);
-					//cout << "poczatek" << endl;
 				}
 				else
 				{
@@ -133,7 +132,6 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 						{
 							m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
 							maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
-							//cout << "--przedzial---" << endl;
 							break;
 						}
 						else
@@ -145,7 +143,6 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 							{
 								m1_operacje[x].czas_trwania = m1_operacje[x].czas_z_kara;
 								maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
-								//cout << "--przedzial-WZNAwiialne---" << endl;
 								break;
 							}
 						}
@@ -154,21 +151,17 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 					{
 						m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
 						maszyna1.push_back(m1_operacje[x]);
-						//cout << "koniec" << endl;
 					}
 				}
 				m2_operacje.push_back(m2_operacje_drugie[zwroc_index(m2_operacje_drugie, m1_operacje[x].numer)]);
 				m2_operacje_drugie.erase(m2_operacje_drugie.begin() + zwroc_index(m2_operacje_drugie, m1_operacje[x].numer));
 				m1_operacje.erase(m1_operacje.begin() + x);
-				//display(maszyna, "Przed");
 				update(maszyna1);
-				//display(maszyna, "Pokaz");
 			}
 			else
 			{
 				czy = true;
-				koniec_pierwszej_op = maszyna2[zwroc_index(maszyna2, m1_operacje[x].numer)].czas_konca; // trzeba poprawnie to ustawic
-																						 //cout << " -- " << x + 1 << "    " << koniec_na_pierwszej << endl;
+				koniec_pierwszej_op = maszyna2[zwroc_index(maszyna2, m1_operacje[x].numer)].czas_konca;
 				if (koniec_pierwszej_op <= maszyna1[0].czas_startu && m1_operacje[x].czas_instancji <= maszyna1[0].czas_startu)
 				{
 					m1_operacje[x].czas_startu = koniec_pierwszej_op;
@@ -187,13 +180,10 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 							m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
 							maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
 							czy = false;
-							//cout << " -- " << x + 1 << "    " << koniec_pierwszej_op << endl;
-							//cout << "--przedzial---" << endl;
 							break;
 						}
 						else
 						{
-							// roznica czasow (kara - normalny) bedzie mniejsza, niz wolne miejsce, wiec skonczy wczesniej
 							if (koniec_pierwszej_op <= maszyna1[i - 1].czas_konca && m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
 								&& maszyna1.size() > i + 1 && maszyna1[i].typ == "maint" && maszyna1[i].maint_kara == 0
 								&& maszyna1[i + 1].czas_startu - maszyna1[i].czas_konca > m1_operacje[x].czas_z_kara - (maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca))
@@ -201,12 +191,11 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 								m1_operacje[x].czas_trwania = m1_operacje[x].czas_z_kara;
 								maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
 								czy = false;
-								//cout << "--przedzial-WZNAwiialne---" << endl;
 								break;
 							}
 						}
 					}
-					if (i == maszyna1.size()) //przelecial i nie zmiescil, wiec dodaje na koniec
+					if (i == maszyna1.size()) 
 					{
 						if (koniec_pierwszej_op <= maszyna1[i - 1].czas_konca)
 						{
@@ -218,7 +207,6 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 						{
 							m1_operacje[x].czas_startu = koniec_pierwszej_op;
 							m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
-							//m1_operacje[x].czas_konca = m1_operacje[x].czas_startu + m1_operacje[x].czas_trwania;
 							m1_operacje[x].ruszaj = false;
 							maszyna1.push_back(m1_operacje[x]);
 							czy = false;
@@ -234,15 +222,14 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 		}
 		if (m2_operacje.size() != 0)
 		{
-			x = rand() % m2_operacje.size(); //losowy z losowego generatora
+			x = rand() % m2_operacje.size(); 
 			if (m2_operacje[x].nr_operacji == 1)
 			{
-				if (m2_operacje[x].czas_instancji <= maszyna2[0].czas_startu) // trafil w pierwszy przedzial <0, czas startu 1-szego>
+				if (m2_operacje[x].czas_instancji <= maszyna2[0].czas_startu) 
 				{
 					m2_operacje[x].czas_startu = 0;
 					m2_operacje[x].czas_konca = m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
 					maszyna2.insert(maszyna2.begin(), m2_operacje[x]);
-					//cout << "poczatek" << endl;
 				}
 				else
 				{
@@ -253,42 +240,35 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 						{
 							m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
 							maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
-							//cout << "--przedzial---" << endl;
 							break;
 						}
 						else
 						{
-							// roznica czasow (kara - normalny) bedzie mniejsza, niz wolne miejsce, wiec skonczy wczesniej
 							if (m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
 								&& maszyna2.size() > i + 1 && maszyna2[i].typ == "maint" && maszyna2[i].maint_kara == 0
 								&& maszyna2[i + 1].czas_startu - maszyna2[i].czas_konca > m2_operacje[x].czas_z_kara - (maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca))
 							{
 								m2_operacje[x].czas_trwania = m2_operacje[x].czas_z_kara;
 								maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
-								//cout << "--przedzial-WZNAwiialne---" << endl;
 								break;
 							}
 						}
 					}
-					if (i == maszyna2.size()) //przelecial i nie zmiescil, wiec dodaje na koniec
+					if (i == maszyna2.size())
 					{
 						m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
 						maszyna2.push_back(m2_operacje[x]);
-						//cout << "koniec" << endl;
 					}
 				}
 				m1_operacje.push_back(m1_operacje_drugie[zwroc_index(m1_operacje_drugie, m2_operacje[x].numer)]);
 				m1_operacje_drugie.erase(m1_operacje_drugie.begin() + zwroc_index(m1_operacje_drugie, m2_operacje[x].numer));
 				m2_operacje.erase(m2_operacje.begin() + x);
-				//display(maszyna, "Przed");
 				update(maszyna2);
-				//display(maszyna, "Pokaz");
 			}
 			else
 			{
 				czy = true;
-				koniec_pierwszej_op = maszyna1[zwroc_index(maszyna1, m2_operacje[x].numer)].czas_konca; // trzeba poprawnie to ustawic
-																						 //cout << " -- " << x + 1 << "    " << koniec_na_pierwszej << endl;
+				koniec_pierwszej_op = maszyna1[zwroc_index(maszyna1, m2_operacje[x].numer)].czas_konca; 
 				if (koniec_pierwszej_op <= maszyna2[0].czas_startu && m2_operacje[x].czas_instancji <= maszyna2[0].czas_startu)
 				{
 					m2_operacje[x].czas_startu = koniec_pierwszej_op;
@@ -307,13 +287,10 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 							m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
 							maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
 							czy = false;
-							//cout << " -- " << x + 1 << "    " << koniec_pierwszej_op << endl;
-							//cout << "--przedzial---" << endl;
 							break;
 						}
 						else
 						{
-							// roznica czasow (kara - normalny) bedzie mniejsza, niz wolne miejsce, wiec skonczy wczesniej
 							if (koniec_pierwszej_op <= maszyna2[i - 1].czas_konca && m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
 								&& maszyna2.size() > i + 1 && maszyna2[i].typ == "maint" && maszyna2[i].maint_kara == 0
 								&& maszyna2[i + 1].czas_startu - maszyna2[i].czas_konca > m2_operacje[x].czas_z_kara - (maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca))
@@ -321,12 +298,11 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 								m2_operacje[x].czas_trwania = m2_operacje[x].czas_z_kara;
 								maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
 								czy = false;
-								//cout << "--przedzial-WZNAwiialne---" << endl;
 								break;
 							}
 						}
 					}
-					if (i == maszyna2.size()) //przelecial i nie zmiescil, wiec dodaje na koniec
+					if (i == maszyna2.size())
 					{
 						if (koniec_pierwszej_op <= maszyna2[i - 1].czas_konca)
 						{
@@ -338,14 +314,10 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 						{
 							m2_operacje[x].czas_startu = koniec_pierwszej_op;
 							m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
-							//m2_operacje[x].czas_konca = m2_operacje[x].czas_startu + m2_operacje[x].czas_trwania;
 							m2_operacje[x].ruszaj = false;
 							maszyna2.push_back(m2_operacje[x]);
 							czy = false;
 						}
-						
-						//cout << "koniec" << endl;
-						//warunek aby dodalo, po 
 					}
 
 				}
@@ -357,148 +329,20 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 			}
 		}
 		
-		//display(maszyna1, "M1", maszyna2, "M2");
+		//display(maszyna1, "M1", maszyna2, "M2")
 	} while (m2_operacje.size() != 0 || m1_operacje.size() != 0 || m2_operacje_drugie.size() != 0 || m1_operacje_drugie.size() != 0);
 }
-void insert_m1(vector <obiekt> &operacje, vector <obiekt> &maszyna) //losuje obiekt, szuka dla niego pierwszego wolnego miejsca
-{
-	srand(time(NULL));
-	int x;
-	int i;
-	do
-	{
-		x = rand() % operacje.size(); //losowy z losowego generatora
-		if (operacje[x].czas_instancji <= maszyna[0].czas_startu) // trafil w pierwszy przedzial <0, czas startu 1-szego>
-		{
-			operacje[x].czas_startu = 0;
-			operacje[x].czas_konca = operacje[x].czas_trwania = operacje[x].czas_instancji;
-			maszyna.insert(maszyna.begin(), operacje[x]);
-			//cout << "poczatek" << endl;
-		}
-		else
-		{
-			for (i = 1; i < maszyna.size(); i++)
-			{
-				if ((maszyna[i - 1].maint_kara == 0 && operacje[x].czas_instancji <= maszyna[i].czas_startu - maszyna[i - 1].czas_konca)
-					|| (maszyna[i - 1].maint_kara && operacje[x].czas_instancji <= maszyna[i].czas_startu - maszyna[i - 1].maint_kara))
-				{
-					operacje[x].czas_trwania = operacje[x].czas_instancji;
-					maszyna.insert(maszyna.begin() + i, operacje[x]);
-					//cout << "--przedzial---" << endl;
-					break;
-				}
-				else
-				{
-					// roznica czasow (kara - normalny) bedzie mniejsza, niz wolne miejsce, wiec skonczy wczesniej
-					if (operacje[x].czas_z_kara - operacje[x].czas_instancji < maszyna[i].czas_startu - maszyna[i - 1].czas_konca
-						&& maszyna.size() > i + 1 && maszyna[i].typ == "maint" && maszyna[i].maint_kara == 0
-						&& maszyna[i + 1].czas_startu - maszyna[i].czas_konca > operacje[x].czas_z_kara - (maszyna[i].czas_startu - maszyna[i - 1].czas_konca))
-					{
-						operacje[x].czas_trwania = operacje[x].czas_z_kara;
-						maszyna.insert(maszyna.begin() + i, operacje[x]);
-						//cout << "--przedzial-WZNAwiialne---" << endl;
-						break;
-					}
-				}	
-			}
-			if (i == maszyna.size()) //przelecial i nie zmiescil, wiec dodaje na koniec
-			{
-				operacje[x].czas_trwania = operacje[x].czas_instancji;
-				maszyna.push_back(operacje[x]);
-				//cout << "koniec" << endl;
-			}
-		}
-		operacje.erase(operacje.begin() + x);
-		//display(maszyna, "Przed");
-		update(maszyna);
-		//display(maszyna, "Pokaz");
-	} while (operacje.size() != 0);
-}
-
-
-
-
-void insert_m2(vector <obiekt> &operacje, vector <obiekt> &maszyna, vector <obiekt> &pierwsza) 
-{
-	srand(time(NULL));
-	int x;
-	int i;
-	int koniec_na_pierwszej;
-	bool czy;
-	do
-	{
-		czy = true;
-		x = rand() % operacje.size();
-		koniec_na_pierwszej = pierwsza[zwroc_index(pierwsza, x + 1)].czas_konca; // trzeba poprawnie to ustawic
-		//cout << " -- " << x + 1 << "    " << koniec_na_pierwszej << endl;
-		if ( koniec_na_pierwszej <= maszyna[0].czas_startu && operacje[x].czas_instancji <= maszyna[0].czas_startu)
-		{
-			operacje[x].czas_startu = koniec_na_pierwszej;
-		    operacje[x].czas_trwania = operacje[x].czas_instancji;
-			operacje[x].czas_konca = operacje[x].czas_startu + operacje[x].czas_trwania;
-			maszyna.insert(maszyna.begin(), operacje[x]);
-			czy = false;
-		}
-		else
-		{
-			for (i = 1; i < maszyna.size(); i++)
-			{
-				if ((koniec_na_pierwszej <= maszyna[i-1].czas_konca && maszyna[i - 1].maint_kara == 0 && operacje[x].czas_instancji <= maszyna[i].czas_startu - maszyna[i - 1].czas_konca)
-					|| (maszyna[i - 1].maint_kara && operacje[x].czas_instancji <= maszyna[i].czas_startu - maszyna[i - 1].maint_kara))
-				{
-					operacje[x].czas_trwania = operacje[x].czas_instancji;
-					maszyna.insert(maszyna.begin() + i, operacje[x]);
-					czy = false;
-					cout << " -- " << x + 1 << "    " << koniec_na_pierwszej << endl;
-					//cout << "--przedzial---" << endl;
-					break;
-				}
-				else
-				{
-					// roznica czasow (kara - normalny) bedzie mniejsza, niz wolne miejsce, wiec skonczy wczesniej
-					if (koniec_na_pierwszej <= maszyna[i - 1].czas_konca && operacje[x].czas_z_kara - operacje[x].czas_instancji < maszyna[i].czas_startu - maszyna[i - 1].czas_konca
-						&& maszyna.size() > i + 1 && maszyna[i].typ == "maint" && maszyna[i].maint_kara == 0
-						&& maszyna[i + 1].czas_startu - maszyna[i].czas_konca > operacje[x].czas_z_kara - (maszyna[i].czas_startu - maszyna[i - 1].czas_konca))
-					{
-						operacje[x].czas_trwania = operacje[x].czas_z_kara;
-						maszyna.insert(maszyna.begin() + i, operacje[x]);
-						czy = false;
-						//cout << "--przedzial-WZNAwiialne---" << endl;
-						break;
-					}
-				}
-			}
-			if (i == maszyna.size() && koniec_na_pierwszej <= maszyna[i - 1].czas_konca) //przelecial i nie zmiescil, wiec dodaje na koniec
-			{
-				operacje[x].czas_trwania = operacje[x].czas_instancji;
-				maszyna.push_back(operacje[x]);
-				czy = false;
-				//cout << "koniec" << endl;
-			}
-		}
-		if (czy == false)
-		{
-			operacje.erase(operacje.begin() + x);
-			update(maszyna);
-		}
-		
-		//display(maszyna, "Przed");		
-		//display(maszyna, "Pokaz");
-	} while (operacje.size() != 0);
-}
-
-
 
 void wypis(vector <obiekt> &maszyna)
 {
 
 }
 
-
 bool compare(obiekt a, obiekt b)
 {
 	return (a.czas_startu < b.czas_startu);
 }
+
 int main()
 {
 	string nazwa = "../../Instancje/";
@@ -556,8 +400,6 @@ int main()
 		sort(m1.begin(), m1.end(), compare);
 		sort(m2.begin(), m2.end(), compare);
 		display(m1, "M1", m2, "M2");
-		//insert_m1(m1_operacje, m1);	
-		//insert_m2(m2_operacje, m2, m1);
 		insert_M(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2);
 		display(m1, "M1", m2, "M2");
 		m1.clear();
