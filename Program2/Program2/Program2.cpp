@@ -12,8 +12,13 @@
 #include <conio.h> // getch
 #include <algorithm> // sort
 #include <iomanip> // setw w display
+#include <utility> // pair
 using namespace std;
 
+//global - sterowanie
+double procent_mutacji = 20;
+int liczba_iteracji = 25;
+/////////////////////
 void display(vector <obiekt> &m1, string nazwa1, vector <obiekt> &m2, string nazwa2)
 {
 	cout << "numer start trwanie koniec" << endl;
@@ -343,6 +348,77 @@ bool compare(obiekt a, obiekt b)
 	return (a.czas_startu < b.czas_startu);
 }
 
+pair < vector <obiekt>, vector <obiekt> > mutacja(vector <obiekt> m1, vector <obiekt> m2) // dziala na kopiach
+{
+	int pozycja;
+	int pozycja_cel;
+	obiekt element;
+	if (rand() % 2) // zmiana na m1
+	{
+		do
+		{
+			pozycja = rand() % m1.size();
+		} while (m1[pozycja].typ == "op"); //znajduje operacje do poruszenia
+		element = m1[pozycja];
+		m1.erase(m1.begin() + pozycja);
+		do
+		{
+			pozycja_cel = rand() % m1.size();
+		} while (m1[pozycja_cel].typ != "op" || pozycja == pozycja_cel);
+		m1.insert(m1.begin() + pozycja_cel, element);
+		update(m1);
+	}
+	else // zmiana na m2
+	{
+
+	}
+	return	make_pair(m1, m2);
+}
+
+vector <pair < vector <obiekt>, vector <obiekt> > > selekcja(vector <pair < vector <obiekt>, vector <obiekt> > >  inst)
+// liczba instancji = polowa (+1)
+{
+	vector <pair < vector <obiekt>, vector <obiekt> > > nowy;
+	int player1;
+	int player2;
+	do 
+	{
+		if (inst.size() > 1)
+		{
+			do
+			{
+				player1 = rand() % inst.size();
+				player2 = rand() % inst.size();
+			} while (player1 == player2); // losuje dwa rozne
+			// max szuka dluzszego uporzadkowania wsrod 2 maszyn jednej instancji
+			// instancja majaca mniejszego max'a przechodzi dalej
+			if (max(inst[player1].first[inst[player1].first.size() - 1].czas_konca, inst[player1].second[inst[player1].second.size() - 1].czas_konca) < max(inst[player2].first[inst[player2].first.size() - 1].czas_konca, inst[player2].second[inst[player2].second.size() - 1].czas_konca))
+			{
+				nowy.push_back(inst[player1]);	 // player1 przechodzi
+			}
+			else
+			{
+				nowy.push_back(inst[player2]);	 // player2 przechodzi
+			}
+			if (player2 > player1)
+			{
+				inst.erase(inst.begin() + player2);
+				inst.erase(inst.begin() + player1);
+			}
+			else
+			{
+				inst.erase(inst.begin() + player1);
+				inst.erase(inst.begin() + player2);
+			}
+		}
+		else
+		{
+			nowy.push_back(inst[0]);
+			inst.erase(inst.begin());
+		}	
+	} while (inst.size()); // jesli zostalo nieparzyscie, to przechodzi
+	return nowy;
+}
 int main()
 {
 	string nazwa = "../../Instancje/";
@@ -355,6 +431,8 @@ int main()
 	vector <obiekt> m2_operacje; //operacje dla m2
 	vector <obiekt> m1_operacje_drugie; //operacje drugie dla m1, uaktywniane (przenoszone do puli do losowania, po wykonaniu operacji 1-szej)
 	vector <obiekt> m2_operacje_drugie; //operacje drugie dla m2
+	pair < vector <obiekt>, vector <obiekt> > para;
+	vector <pair < vector <obiekt>, vector <obiekt> > > inst;
 	int liczba_instancji;
 	int liczba_operacji;
 	int czas_operacji1;
@@ -399,9 +477,29 @@ int main()
 		uchwyt.close();
 		sort(m1.begin(), m1.end(), compare);
 		sort(m2.begin(), m2.end(), compare);
-		display(m1, "M1", m2, "M2");
+		//display(m1, "M1", m2, "M2");
 		insert_M(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2);
-		display(m1, "M1", m2, "M2");
+		//display(m1, "M1", m2, "M2");
+		inst.push_back(make_pair(m1, m2)); // odwolanie to : inst[0].first/second[index].pole
+		srand(time(NULL));
+		for (int k = 0; k < liczba_iteracji; k++) // liczba iteracji na sztywno
+		{
+			for (int m = 0; m < inst.size(); m++) // po rozmiarze tablicy instancji
+			{
+				if (rand() % 100 < procent_mutacji)
+				{
+					inst.push_back(mutacja(inst[m].first, inst[m].second));
+				}
+				cout << k << "\t" << m << "\t" << inst.size() << endl;
+				
+			}
+			inst = selekcja(inst);
+			if (k % 10 == 0)
+			{
+				procent_mutacji *= 0.99;
+			}
+		}
+
 		m1.clear();
 		m2.clear();
 	}
