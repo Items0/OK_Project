@@ -338,10 +338,6 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 	} while (m2_operacje.size() != 0 || m1_operacje.size() != 0 || m2_operacje_drugie.size() != 0 || m1_operacje_drugie.size() != 0);
 }
 
-void wypis(vector <obiekt> &maszyna)
-{
-
-}
 
 bool compare(obiekt a, obiekt b)
 {
@@ -419,6 +415,41 @@ vector <pair < vector <obiekt>, vector <obiekt> > > selekcja(vector <pair < vect
 	} while (inst.size()); // jesli zostalo nieparzyscie, to przechodzi
 	return nowy;
 }
+
+void wypelnij_idle(vector <obiekt> &maszyna)
+{
+	obiekt element;
+	element.numer = 1;
+	element.czas_instancji = element.czas_z_kara = element.maint_kara = element.nr_operacji = element.czas_startu = 0;
+	element.typ = "idle";
+	if (maszyna[0].czas_startu != 0) // mogl tam wpasc maint np. w 2 sec
+	{
+		element.czas_konca = element.czas_trwania = maszyna[0].czas_startu;
+		maszyna.insert(maszyna.begin(), element);
+		element.numer++;
+	}
+	for (int i = 1; i < maszyna.size(); i++)
+	{
+		if (maszyna[i - 1].maint_kara == 0 && maszyna[i].czas_startu > maszyna[i - 1].czas_konca)
+		{
+			element.czas_startu = maszyna[i - 1].czas_konca;
+			element.czas_konca = maszyna[i].czas_startu;
+			element.czas_trwania = element.czas_konca - element.czas_startu;
+			maszyna.insert(maszyna.begin() + i, element);
+			i++;
+			element.numer++;
+		}
+		if (maszyna[i - 1].maint_kara && maszyna[i].czas_startu > maszyna[i - 1].maint_kara)
+		{
+			element.czas_startu = maszyna[i - 1].maint_kara;
+			element.czas_konca = maszyna[i].czas_startu;
+			element.czas_trwania = element.czas_konca - element.czas_startu;
+			maszyna.insert(maszyna.begin() + i, element);
+			i++;
+			element.numer++;
+		}
+	}	
+}
 int main()
 {
 	string nazwa = "../../Instancje/";
@@ -443,6 +474,11 @@ int main()
 	int przerwa_maszyna;
 	int czas_przerwy;
 	int start_przerwy;
+	int czas_poczatkowy;
+	int suma_idle_M1;
+	int suma_maint_M1;
+	int suma_idle_M2;
+	int suma_maint_M2;
 	uchwyt >> liczba_instancji;
 	uchwyt.close();
 	for (int i = 1; i <= liczba_instancji; i++)
@@ -480,28 +516,84 @@ int main()
 		//display(m1, "M1", m2, "M2");
 		insert_M(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2);
 		//display(m1, "M1", m2, "M2");
+		czas_poczatkowy = max(m1[m1.size() - 1].czas_konca, m2[m2.size() - 1].czas_konca);
 		inst.push_back(make_pair(m1, m2)); // odwolanie to : inst[0].first/second[index].pole
 		srand(time(NULL));
-		for (int k = 0; k < liczba_iteracji; k++) // liczba iteracji na sztywno
+		//for (int k = 0; k < liczba_iteracji; k++) // liczba iteracji na sztywno
+		//{
+		//	for (int m = 0; m < inst.size(); m++) // po rozmiarze tablicy instancji
+		//	{
+		//		if (rand() % 100 < procent_mutacji)
+		//		{
+		//			inst.push_back(mutacja(inst[m].first, inst[m].second));
+		//		}
+		//		cout << k << "\t" << m << "\t" << inst.size() << endl;
+		//		
+		//	}
+		//	inst = selekcja(inst);
+		//	if (k % 10 == 0)
+		//	{
+		//		procent_mutacji *= 0.99;
+		//	}
+		//}
+		// w tym momencie musi juz zostac tylko jedna najlepsza instancja
+		// m1 = inst[0].first; znalezienie najlepszego w selekcji ... 
+		// m2 = inst[0].second;
+		
+		wypelnij_idle(m1);
+		wypelnij_idle(m2);
+		wynik.open(nazwa_rozw + to_string(i) + ".txt", ios::out | ios::trunc);
+		wynik << max(m1[m1.size() - 1].czas_konca, m2[m2.size() - 1].czas_konca) << ", " << czas_poczatkowy << endl;
+		suma_idle_M1 = 0;
+		suma_maint_M1 = 0;
+		suma_idle_M2 = 0;
+		suma_maint_M2 = 0;
+		wynik << "M1:";
+		for (int k = 0; k < m1.size(); k++)
 		{
-			for (int m = 0; m < inst.size(); m++) // po rozmiarze tablicy instancji
+			
+			if (m1[k].typ == "op")
 			{
-				if (rand() % 100 < procent_mutacji)
-				{
-					inst.push_back(mutacja(inst[m].first, inst[m].second));
-				}
-				cout << k << "\t" << m << "\t" << inst.size() << endl;
-				
+				wynik << " " << m1[k].typ << m1[k].nr_operacji << "_" << m1[k].numer << ", " << m1[k].czas_startu << ", " << m1[k].czas_instancji << ", " << m1[k].czas_trwania << ";";
 			}
-			inst = selekcja(inst);
-			if (k % 10 == 0)
+			else // maint lub idle
 			{
-				procent_mutacji *= 0.99;
+				wynik << " " << m1[k].typ << m1[k].numer << "_M1, " << m1[k].czas_startu << ", " << m1[k].czas_trwania << ";";
+				if (m1[k].typ == "maint")
+				{
+					suma_maint_M1 += m1[k].czas_trwania;
+				}
+				else
+				{
+					suma_idle_M1 += m1[k].czas_trwania;
+				}
+			}	
+		}
+		wynik << endl << "M2:"; // druga maszyna
+		for (int k = 0; k < m2.size(); k++)
+		{
+			if (m2[k].typ == "op")
+			{
+				wynik << " " << m2[k].typ << m2[k].nr_operacji << "_" << m2[k].numer << ", " << m2[k].czas_startu << ", " << m2[k].czas_instancji << ", " << m2[k].czas_trwania << ";";
+			}
+			else // maint lub idle
+			{
+				wynik << " " << m2[k].typ << m2[k].numer << "_M2," << m2[k].czas_startu << ", " << m2[k].czas_trwania << ";";
+				if (m2[k].typ == "maint")
+				{
+					suma_maint_M2 += m2[k].czas_trwania;
+				}
+				else
+				{
+					suma_idle_M2 += m2[k].czas_trwania;
+				}
 			}
 		}
-
+		wynik << endl << suma_maint_M1 << endl << suma_maint_M2 << endl << suma_idle_M1 << endl << suma_idle_M2;
+		wynik.close();
+		inst.clear();
 		m1.clear();
-		m2.clear();
+		m2.clear();	
 	}
 }
 
