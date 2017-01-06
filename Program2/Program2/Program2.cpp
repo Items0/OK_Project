@@ -16,8 +16,9 @@
 using namespace std;
 
 //global - sterowanie
-double procent_mutacji = 20;
-int liczba_iteracji = 25;
+double global_procent_mutacji = 20;
+int liczba_iteracji = 50;
+int wielkosc_populacji = 50; // dla selekcji
 /////////////////////
 void display(vector <obiekt> &m1, string nazwa1, vector <obiekt> &m2, string nazwa2)
 {
@@ -29,7 +30,7 @@ void display(vector <obiekt> &m1, string nazwa1, vector <obiekt> &m2, string naz
 		{
 			cout << " " << left << setw(6) << m1[i].numer << setw(7) << m1[i].czas_startu << left << setw(100) << m1[i].czas_trwania;// << " " << m[i].czas_z_kara << " " << m[i].czas_konca << endl;
 		}
-	    if (m1[i].typ == "maint")
+		if (m1[i].typ == "maint")
 		{
 			cout << " " << left << setw(6) << m1[i].numer << setw(7) << m1[i].czas_startu << setw(7) << m1[i].czas_trwania << left << setw(93) << m1[i].czas_konca;
 		}
@@ -47,7 +48,7 @@ void display(vector <obiekt> &m1, string nazwa1, vector <obiekt> &m2, string naz
 			{
 				cout << left << setw(7) << m2[i].numer << setw(7) << m2[i].czas_startu << setw(7) << m2[i].czas_trwania << setw(7) << m2[i].czas_konca << endl;
 			}
-		}	
+		}
 	}
 	_getch();
 }
@@ -57,23 +58,23 @@ void update(vector <obiekt> &m)
 	for (int i = 1; i < m.size(); i++)
 	{
 		if (m[i].typ == "op") // moze zmieniac tylko czasy operacji
-		{		
-				if (m[i - 1].maint_kara)
-				{
-					//m[i - 2].czas_startu = m[i - 3].czas_konca;
-					//m[i - 2].czas_konca = m[i - 2].czas_startu + m[i - 2].czas_trwania + m[i - 1].czas_trwania;
-					m[i].czas_startu = m[i - 1].maint_kara;	
-				}
-				else
-				{
-					if (m[i].ruszaj)
-					m[i].czas_startu = m[i - 1].czas_konca;	
-				}
-				m[i].czas_konca = m[i].czas_startu + m[i].czas_trwania;
-				if (m.size() > i + 1 && m[i].czas_trwania == m[i].czas_z_kara && m[i + 1].typ == "maint")
-				{
-					m[i].czas_konca += m[i + 1].czas_trwania;
-				}	
+		{
+			if (m[i - 1].maint_kara)
+			{
+				//m[i - 2].czas_startu = m[i - 3].czas_konca;
+				//m[i - 2].czas_konca = m[i - 2].czas_startu + m[i - 2].czas_trwania + m[i - 1].czas_trwania;
+				m[i].czas_startu = m[i - 1].maint_kara;
+			}
+			else
+			{
+				if (m[i].ruszaj)
+					m[i].czas_startu = m[i - 1].czas_konca;
+			}
+			m[i].czas_konca = m[i].czas_startu + m[i].czas_trwania;
+			if (m.size() > i + 1 && m[i].czas_trwania == m[i].czas_z_kara && m[i + 1].typ == "maint")
+			{
+				m[i].czas_konca += m[i + 1].czas_trwania;
+			}
 		}
 		else
 		{
@@ -81,7 +82,7 @@ void update(vector <obiekt> &m)
 			{
 				m[i].maint_kara = m[i - 1].czas_konca;
 			}
-		}	
+		}
 	}
 }
 
@@ -201,7 +202,7 @@ void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, v
 							}
 						}
 					}
-					if (i == maszyna1.size()) 
+					if (i == maszyna1.size())
 					{
 						if (koniec_pierwszej_op <= maszyna1[i - 1].czas_konca)
 						{
@@ -228,11 +229,11 @@ void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, v
 		}
 		if (m2_operacje.size() != 0)
 		{
-			x = rand() % m2_operacje.size(); 
+			x = rand() % m2_operacje.size();
 			m2_kolejnosc.push_back(x);
 			if (m2_operacje[x].nr_operacji == 1)
 			{
-				if (m2_operacje[x].czas_instancji <= maszyna2[0].czas_startu) 
+				if (m2_operacje[x].czas_instancji <= maszyna2[0].czas_startu)
 				{
 					m2_operacje[x].czas_startu = 0;
 					m2_operacje[x].czas_konca = m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
@@ -275,7 +276,7 @@ void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, v
 			else
 			{
 				czy = true;
-				koniec_pierwszej_op = maszyna1[zwroc_index(maszyna1, m2_operacje[x].numer)].czas_konca; 
+				koniec_pierwszej_op = maszyna1[zwroc_index(maszyna1, m2_operacje[x].numer)].czas_konca;
 				if (koniec_pierwszej_op <= maszyna2[0].czas_startu && m2_operacje[x].czas_instancji <= maszyna2[0].czas_startu)
 				{
 					m2_operacje[x].czas_startu = koniec_pierwszej_op;
@@ -335,7 +336,7 @@ void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, v
 				}
 			}
 		}
-		
+
 		//display(maszyna1, "M1", maszyna2, "M2")
 	} while (m2_operacje.size() != 0 || m1_operacje.size() != 0 || m2_operacje_drugie.size() != 0 || m1_operacje_drugie.size() != 0);
 }
@@ -580,6 +581,16 @@ bool compare(obiekt a, obiekt b)
 	return (a.czas_startu < b.czas_startu);
 }
 
+/*bool tutaj(tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > a, tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > b)
+{
+if (max(get<0>(a)[get<0>(a).size() - 1].czas_konca, get<1>(a)[get<1>(a).size() - 1].czas_konca) < max(get<0>(b)[get<0>(b).size() - 1].czas_konca, get<1>(b)[get<1>(b).size() - 1].czas_konca))
+{
+return false;
+}
+else
+return true;
+}*/
+
 void mutacja(vector <obiekt> &tab)
 {
 	srand(time(NULL));
@@ -594,30 +605,36 @@ void mutacja(vector <obiekt> &tab)
 	swap(tab[pozycja], tab[pozycja_cel]);
 }
 
-vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > > selekcja(vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > >  &inst)
+vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > > selekcja(vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > >  &inst, int wielkosc_populacji)
 // liczba instancji = polowa (+1)
 {
-	vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > > nowy;
 	int player1;
 	int player2;
-	do 
+	vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > > nowy;
+	if (inst.size() > wielkosc_populacji)
 	{
-		if (inst.size() > 1)
+		do
 		{
+			if (inst.size() <= 1)
+			{
+				break;
+			}
 			do
 			{
 				player1 = rand() % inst.size();
 				player2 = rand() % inst.size();
 			} while (player1 == player2); // losuje dwa rozne
-			// max szuka dluzszego uporzadkowania wsrod 2 maszyn jednej instancji
-			// instancja majaca mniejszego max'a przechodzi dalej
+										  // max szuka dluzszego uporzadkowania wsrod 2 maszyn jednej instancji
+										  // instancja majaca mniejszego max'a przechodzi dalej
 			if (max(get<0>(inst[player1])[get<0>(inst[player1]).size() - 1].czas_konca, get<1>(inst[player1])[get<1>(inst[player1]).size() - 1].czas_konca) < max(get<0>(inst[player2])[get<0>(inst[player2]).size() - 1].czas_konca, get<1>(inst[player2])[get<1>(inst[player2]).size() - 1].czas_konca))
 			{
 				nowy.push_back(inst[player1]);	 // player1 przechodzi
+				//inst.erase(inst.begin() + player2);
 			}
 			else
 			{
 				nowy.push_back(inst[player2]);	 // player2 przechodzi
+				//inst.erase(inst.begin() + player1);
 			}
 			if (player2 > player1)
 			{
@@ -629,14 +646,13 @@ vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiek
 				inst.erase(inst.begin() + player1);
 				inst.erase(inst.begin() + player2);
 			}
-		}
-		else
-		{
-			nowy.push_back(inst[0]);
-			inst.erase(inst.begin());
-		}	
-	} while (inst.size()); // jesli zostalo nieparzyscie, to przechodzi
-	return nowy;
+
+		} while (inst.size() + nowy.size() > wielkosc_populacji); // jesli zostalo nieparzyscie, to przechodzi
+		nowy.insert(nowy.end(), inst.begin(), inst.end());
+		return nowy;
+	}
+	else
+		return inst;
 }
 
 void wypelnij_idle(vector <obiekt> &maszyna)
@@ -671,7 +687,7 @@ void wypelnij_idle(vector <obiekt> &maszyna)
 			i++;
 			element.numer++;
 		}
-	}	
+	}
 }
 
 int main()
@@ -708,6 +724,7 @@ int main()
 	int suma_idle_M2;
 	int suma_maint_M2;
 	int co_mutowac;
+	double procent_mutacji;
 	uchwyt >> liczba_instancji;
 	uchwyt.close();
 	for (int i = 1; i <= liczba_instancji; i++)
@@ -744,18 +761,19 @@ int main()
 		sort(m2.begin(), m2.end(), compare);
 		m1_pierwotne = m1;
 		m2_pierwotne = m2;
-		//display(m1, "M1", m2, "M2");
-		krotka = make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie);
+		//display(m1, "M1", m2, "M2");	
 		insert_M(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);
-		display(m1, "M1", m2, "M2");
+		krotka = make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie);
+		//display(m1, "M1", m2, "M2");
 		czas_poczatkowy = max(m1[m1.size() - 1].czas_konca, m2[m2.size() - 1].czas_konca);
 		inst.push_back(krotka); // zapisanie instancji 
 		srand(time(NULL));
+		procent_mutacji = global_procent_mutacji;
 		for (int k = 0; k < liczba_iteracji; k++) // liczba iteracji na sztywno
 		{
 			for (int m = 0; m < inst.size(); m++) // po rozmiarze tablicy instancji
 			{
-				cout << m << endl;
+				cout << k << "\t" << m << endl;
 				if (rand() % 100 < procent_mutacji)
 				{
 					tie(ignore, ignore, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie) = inst[m];
@@ -786,24 +804,30 @@ int main()
 					}
 					m1 = m1_pierwotne;
 					m2 = m2_pierwotne;
-					insert_kolejnosc(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);	
+					insert_kolejnosc(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);
 					//cout << "Po mutacji" << endl;
 					//display(m1, "M1", m2, "M2");
 					inst.push_back(make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie));
+					if (m1.size() == 0)
+					{
+						cout << "error"; _getch();
+					}
 				}
 				//cout << k << "\t" << m << "\t" << inst.size() << endl;
-				
+
 			}
-			//inst = selekcja(inst);
-			if (k % 10 == 0)
+			inst = selekcja(inst, wielkosc_populacji);
+			if (true)
 			{
 				procent_mutacji *= 0.99;
 			}
+			 
 		}
-		 /*w tym momencie musi juz zostac tylko jedna najlepsza instancja
-		 m1 = get<0>(inst[0]); znalezienie najlepszego w selekcji ... 
-		 m2 = get<1>(inst[0]);*/
-		
+		inst = selekcja(inst, 1);
+		//w tym momencie musi juz zostac tylko jedna najlepsza instancja
+		m1 = get<0>(inst[0]); //znalezienie najlepszego w selekcji ... 
+		m2 = get<1>(inst[0]);
+
 		wypelnij_idle(m1);
 		wypelnij_idle(m2);
 		wynik.open(nazwa_rozw + to_string(i) + ".txt", ios::out | ios::trunc);
@@ -815,7 +839,7 @@ int main()
 		wynik << "M1:";
 		for (int k = 0; k < m1.size(); k++)
 		{
-			
+
 			if (m1[k].typ == "op")
 			{
 				wynik << " " << m1[k].typ << m1[k].nr_operacji << "_" << m1[k].numer << ", " << m1[k].czas_startu << ", " << m1[k].czas_instancji << ", " << m1[k].czas_trwania << ";";
@@ -831,7 +855,7 @@ int main()
 				{
 					suma_idle_M1 += m1[k].czas_trwania;
 				}
-			}	
+			}
 		}
 		wynik << endl << "M2:"; // druga maszyna
 		for (int k = 0; k < m2.size(); k++)
@@ -857,7 +881,7 @@ int main()
 		wynik.close();
 		inst.clear();
 		m1.clear();
-		m2.clear();	
+		m2.clear();
 		m1_operacje.clear();
 		m2_operacje.clear();
 		m1_operacje_drugie.clear();
