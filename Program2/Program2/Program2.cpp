@@ -12,7 +12,7 @@
 #include <conio.h> // getch
 #include <algorithm> // sort
 #include <iomanip> // setw w display
-#include <utility> // pair
+#include <tuple> // tuple
 using namespace std;
 
 //global - sterowanie
@@ -21,7 +21,7 @@ int liczba_iteracji = 25;
 /////////////////////
 void display(vector <obiekt> &m1, string nazwa1, vector <obiekt> &m2, string nazwa2)
 {
-	cout << "numer start trwanie koniec" << endl;
+	//cout << "numer start trwanie koniec" << endl;
 	cout << nazwa1 << left << setw(4) << ":" << setw(108) << m1.size() << nazwa2 << ":" << setw(4) << right << m2.size() << endl;
 	for (int i = 0; i < m1.size(); i++)
 	{
@@ -106,7 +106,7 @@ int zwroc_index(vector <obiekt> &m, int numer)
 	}
 }
 
-void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie, vector <obiekt> &maszyna1, vector <obiekt> &m2_operacje, vector <obiekt> &m2_operacje_drugie, vector <obiekt> &maszyna2)
+void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, vector <obiekt> &maszyna1, vector <obiekt> m2_operacje, vector <obiekt> m2_operacje_drugie, vector <obiekt> &maszyna2, vector <int> &m1_kolejnosc, vector <int> &m2_kolejnosc)
 {
 	//trzeba jednoczesnie 2 maszyny obsluzyc, -> przeplatanie sie w do-while
 	srand(time(NULL));
@@ -120,6 +120,7 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 		if (m1_operacje.size() != 0)
 		{
 			x = rand() % m1_operacje.size(); //losowy z losowego generatora
+			m1_kolejnosc.push_back(x);
 			if (m1_operacje[x].nr_operacji == 1)
 			{
 				if (m1_operacje[x].czas_instancji <= maszyna1[0].czas_startu) // trafil w pierwszy przedzial <0, czas startu 1-szego>
@@ -228,6 +229,7 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 		if (m2_operacje.size() != 0)
 		{
 			x = rand() % m2_operacje.size(); 
+			m2_kolejnosc.push_back(x);
 			if (m2_operacje[x].nr_operacji == 1)
 			{
 				if (m2_operacje[x].czas_instancji <= maszyna2[0].czas_startu) 
@@ -338,43 +340,264 @@ void insert_M(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacje_drugie,
 	} while (m2_operacje.size() != 0 || m1_operacje.size() != 0 || m2_operacje_drugie.size() != 0 || m1_operacje_drugie.size() != 0);
 }
 
+void insert_kolejnosc(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, vector <obiekt> &maszyna1, vector <obiekt> m2_operacje, vector <obiekt> m2_operacje_drugie, vector <obiekt> &maszyna2, vector <int> m1_kolejnosc, vector <int> m2_kolejnosc) // dwa parametry przez wartosc
+{
+	//trzeba jednoczesnie 2 maszyny obsluzyc, -> przeplatanie sie w do-while
+	srand(time(NULL));
+	int x;
+	int i;
+	bool czy;
+	int koniec_pierwszej_op;
+	do
+	{
+		// dla 1-szej maszyny
+		if (m1_operacje.size() != 0)
+		{
+			x = m1_kolejnosc[0]; //pierwszy z odtworzonej kolejnosci
+			m1_kolejnosc.erase(m1_kolejnosc.begin());
+			if (m1_operacje[x].nr_operacji == 1)
+			{
+				if (m1_operacje[x].czas_instancji <= maszyna1[0].czas_startu) // trafil w pierwszy przedzial <0, czas startu 1-szego>
+				{
+					m1_operacje[x].czas_startu = 0;
+					m1_operacje[x].czas_konca = m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
+					maszyna1.insert(maszyna1.begin(), m1_operacje[x]);
+				}
+				else
+				{
+					for (i = 1; i < maszyna1.size(); i++)
+					{
+						if ((maszyna1[i - 1].maint_kara == 0 && m1_operacje[x].czas_instancji <= maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca)
+							|| (maszyna1[i - 1].maint_kara && m1_operacje[x].czas_instancji <= maszyna1[i].czas_startu - maszyna1[i - 1].maint_kara))
+						{
+							m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
+							maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
+							break;
+						}
+						else
+						{
+							// roznica czasow (kara - normalny) bedzie mniejsza, niz wolne miejsce, wiec skonczy wczesniej
+							if (m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
+								&& maszyna1.size() > i + 1 && maszyna1[i].typ == "maint" && maszyna1[i].maint_kara == 0
+								&& maszyna1[i + 1].czas_startu - maszyna1[i].czas_konca > m1_operacje[x].czas_z_kara - (maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca))
+							{
+								m1_operacje[x].czas_trwania = m1_operacje[x].czas_z_kara;
+								maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
+								break;
+							}
+						}
+					}
+					if (i == maszyna1.size()) //przelecial i nie zmiescil, wiec dodaje na koniec
+					{
+						m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
+						maszyna1.push_back(m1_operacje[x]);
+					}
+				}
+				m2_operacje.push_back(m2_operacje_drugie[zwroc_index(m2_operacje_drugie, m1_operacje[x].numer)]);
+				m2_operacje_drugie.erase(m2_operacje_drugie.begin() + zwroc_index(m2_operacje_drugie, m1_operacje[x].numer));
+				m1_operacje.erase(m1_operacje.begin() + x);
+				update(maszyna1);
+			}
+			else
+			{
+				czy = true;
+				koniec_pierwszej_op = maszyna2[zwroc_index(maszyna2, m1_operacje[x].numer)].czas_konca;
+				if (koniec_pierwszej_op <= maszyna1[0].czas_startu && m1_operacje[x].czas_instancji <= maszyna1[0].czas_startu)
+				{
+					m1_operacje[x].czas_startu = koniec_pierwszej_op;
+					m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
+					m1_operacje[x].czas_konca = m1_operacje[x].czas_startu + m1_operacje[x].czas_trwania;
+					maszyna1.insert(maszyna1.begin(), m1_operacje[x]);
+					czy = false;
+				}
+				else
+				{
+					for (i = 1; i < maszyna1.size(); i++)
+					{
+						if ((koniec_pierwszej_op <= maszyna1[i - 1].czas_konca && maszyna1[i - 1].maint_kara == 0 && m1_operacje[x].czas_instancji <= maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca)
+							|| (maszyna1[i - 1].maint_kara && m1_operacje[x].czas_instancji <= maszyna1[i].czas_startu - maszyna1[i - 1].maint_kara))
+						{
+							m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
+							maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
+							czy = false;
+							break;
+						}
+						else
+						{
+							if (koniec_pierwszej_op <= maszyna1[i - 1].czas_konca && m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
+								&& maszyna1.size() > i + 1 && maszyna1[i].typ == "maint" && maszyna1[i].maint_kara == 0
+								&& maszyna1[i + 1].czas_startu - maszyna1[i].czas_konca > m1_operacje[x].czas_z_kara - (maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca))
+							{
+								m1_operacje[x].czas_trwania = m1_operacje[x].czas_z_kara;
+								maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
+								czy = false;
+								break;
+							}
+						}
+					}
+					if (i == maszyna1.size())
+					{
+						if (koniec_pierwszej_op <= maszyna1[i - 1].czas_konca)
+						{
+							m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
+							maszyna1.push_back(m1_operacje[x]);
+							czy = false;
+						}
+						else
+						{
+							m1_operacje[x].czas_startu = koniec_pierwszej_op;
+							m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
+							m1_operacje[x].ruszaj = false;
+							maszyna1.push_back(m1_operacje[x]);
+							czy = false;
+						}
+					}
+				}
+				if (czy == false)
+				{
+					m1_operacje.erase(m1_operacje.begin() + x);
+					update(maszyna1);
+				}
+			}
+		}
+		if (m2_operacje.size() != 0)
+		{
+			x = rand() % m2_operacje.size();
+			x = m2_kolejnosc[0]; //pierwszy z odtworzonej kolejnosci
+			m2_kolejnosc.erase(m2_kolejnosc.begin());
+			if (m2_operacje[x].nr_operacji == 1)
+			{
+				if (m2_operacje[x].czas_instancji <= maszyna2[0].czas_startu)
+				{
+					m2_operacje[x].czas_startu = 0;
+					m2_operacje[x].czas_konca = m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
+					maszyna2.insert(maszyna2.begin(), m2_operacje[x]);
+				}
+				else
+				{
+					for (i = 1; i < maszyna2.size(); i++)
+					{
+						if ((maszyna2[i - 1].maint_kara == 0 && m2_operacje[x].czas_instancji <= maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca)
+							|| (maszyna2[i - 1].maint_kara && m2_operacje[x].czas_instancji <= maszyna2[i].czas_startu - maszyna2[i - 1].maint_kara))
+						{
+							m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
+							maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
+							break;
+						}
+						else
+						{
+							if (m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
+								&& maszyna2.size() > i + 1 && maszyna2[i].typ == "maint" && maszyna2[i].maint_kara == 0
+								&& maszyna2[i + 1].czas_startu - maszyna2[i].czas_konca > m2_operacje[x].czas_z_kara - (maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca))
+							{
+								m2_operacje[x].czas_trwania = m2_operacje[x].czas_z_kara;
+								maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
+								break;
+							}
+						}
+					}
+					if (i == maszyna2.size())
+					{
+						m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
+						maszyna2.push_back(m2_operacje[x]);
+					}
+				}
+				m1_operacje.push_back(m1_operacje_drugie[zwroc_index(m1_operacje_drugie, m2_operacje[x].numer)]);
+				m1_operacje_drugie.erase(m1_operacje_drugie.begin() + zwroc_index(m1_operacje_drugie, m2_operacje[x].numer));
+				m2_operacje.erase(m2_operacje.begin() + x);
+				update(maszyna2);
+			}
+			else
+			{
+				czy = true;
+				koniec_pierwszej_op = maszyna1[zwroc_index(maszyna1, m2_operacje[x].numer)].czas_konca;
+				if (koniec_pierwszej_op <= maszyna2[0].czas_startu && m2_operacje[x].czas_instancji <= maszyna2[0].czas_startu)
+				{
+					m2_operacje[x].czas_startu = koniec_pierwszej_op;
+					m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
+					m2_operacje[x].czas_konca = m2_operacje[x].czas_startu + m2_operacje[x].czas_trwania;
+					maszyna2.insert(maszyna2.begin(), m2_operacje[x]);
+					czy = false;
+				}
+				else
+				{
+					for (i = 1; i < maszyna2.size(); i++)
+					{
+						if ((koniec_pierwszej_op <= maszyna2[i - 1].czas_konca && maszyna2[i - 1].maint_kara == 0 && m2_operacje[x].czas_instancji <= maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca)
+							|| (maszyna2[i - 1].maint_kara && m2_operacje[x].czas_instancji <= maszyna2[i].czas_startu - maszyna2[i - 1].maint_kara))
+						{
+							m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
+							maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
+							czy = false;
+							break;
+						}
+						else
+						{
+							if (koniec_pierwszej_op <= maszyna2[i - 1].czas_konca && m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
+								&& maszyna2.size() > i + 1 && maszyna2[i].typ == "maint" && maszyna2[i].maint_kara == 0
+								&& maszyna2[i + 1].czas_startu - maszyna2[i].czas_konca > m2_operacje[x].czas_z_kara - (maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca))
+							{
+								m2_operacje[x].czas_trwania = m2_operacje[x].czas_z_kara;
+								maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
+								czy = false;
+								break;
+							}
+						}
+					}
+					if (i == maszyna2.size())
+					{
+						if (koniec_pierwszej_op <= maszyna2[i - 1].czas_konca)
+						{
+							m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
+							maszyna2.push_back(m2_operacje[x]);
+							czy = false;
+						}
+						else
+						{
+							m2_operacje[x].czas_startu = koniec_pierwszej_op;
+							m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
+							m2_operacje[x].ruszaj = false;
+							maszyna2.push_back(m2_operacje[x]);
+							czy = false;
+						}
+					}
+
+				}
+				if (czy == false)
+				{
+					m2_operacje.erase(m2_operacje.begin() + x);
+					update(maszyna2);
+				}
+			}
+		}
+
+		//display(maszyna1, "M1", maszyna2, "M2")
+	} while (m2_operacje.size() != 0 || m1_operacje.size() != 0 || m2_operacje_drugie.size() != 0 || m1_operacje_drugie.size() != 0);
+}
 
 bool compare(obiekt a, obiekt b)
 {
 	return (a.czas_startu < b.czas_startu);
 }
 
-pair < vector <obiekt>, vector <obiekt> > mutacja(vector <obiekt> m1, vector <obiekt> m2) // dziala na kopiach
+void mutacja(vector <obiekt> &tab)
 {
+	srand(time(NULL));
 	int pozycja;
 	int pozycja_cel;
-	obiekt element;
-	if (rand() % 2) // zmiana na m1
+	pozycja = rand() % tab.size();
+	do
 	{
-		do
-		{
-			pozycja = rand() % m1.size();
-		} while (m1[pozycja].typ == "op"); //znajduje operacje do poruszenia
-		element = m1[pozycja];
-		m1.erase(m1.begin() + pozycja);
-		do
-		{
-			pozycja_cel = rand() % m1.size();
-		} while (m1[pozycja_cel].typ != "op" || pozycja == pozycja_cel);
-		m1.insert(m1.begin() + pozycja_cel, element);
-		update(m1);
-	}
-	else // zmiana na m2
-	{
-
-	}
-	return	make_pair(m1, m2);
+		pozycja_cel = rand() % tab.size();
+	} while (pozycja == pozycja_cel);
+	//cout << "poz = " << pozycja << " nr = " <<tab[pozycja].numer << " cel = " << pozycja_cel << " nr = " << tab[pozycja_cel].numer << endl;
+	swap(tab[pozycja], tab[pozycja_cel]);
 }
 
-vector <pair < vector <obiekt>, vector <obiekt> > > selekcja(vector <pair < vector <obiekt>, vector <obiekt> > >  inst)
+vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > > selekcja(vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > >  &inst)
 // liczba instancji = polowa (+1)
 {
-	vector <pair < vector <obiekt>, vector <obiekt> > > nowy;
+	vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > > nowy;
 	int player1;
 	int player2;
 	do 
@@ -388,7 +611,7 @@ vector <pair < vector <obiekt>, vector <obiekt> > > selekcja(vector <pair < vect
 			} while (player1 == player2); // losuje dwa rozne
 			// max szuka dluzszego uporzadkowania wsrod 2 maszyn jednej instancji
 			// instancja majaca mniejszego max'a przechodzi dalej
-			if (max(inst[player1].first[inst[player1].first.size() - 1].czas_konca, inst[player1].second[inst[player1].second.size() - 1].czas_konca) < max(inst[player2].first[inst[player2].first.size() - 1].czas_konca, inst[player2].second[inst[player2].second.size() - 1].czas_konca))
+			if (max(get<0>(inst[player1])[get<0>(inst[player1]).size() - 1].czas_konca, get<1>(inst[player1])[get<1>(inst[player1]).size() - 1].czas_konca) < max(get<0>(inst[player2])[get<0>(inst[player2]).size() - 1].czas_konca, get<1>(inst[player2])[get<1>(inst[player2]).size() - 1].czas_konca))
 			{
 				nowy.push_back(inst[player1]);	 // player1 przechodzi
 			}
@@ -450,20 +673,25 @@ void wypelnij_idle(vector <obiekt> &maszyna)
 		}
 	}	
 }
+
 int main()
 {
 	string nazwa = "../../Instancje/";
 	string nazwa_rozw = "../../Rozwiazania/";
 	fstream uchwyt("../../LiczbaInstancji.txt", ios::in);
 	fstream wynik;
+	vector <obiekt> m1_pierwotne; //maszyna 1
+	vector <obiekt> m2_pierwotne; //maszyna 2
 	vector <obiekt> m1; //maszyna 1
 	vector <obiekt> m2; //maszyna 2
 	vector <obiekt> m1_operacje; //operacje dla m1
 	vector <obiekt> m2_operacje; //operacje dla m2
 	vector <obiekt> m1_operacje_drugie; //operacje drugie dla m1, uaktywniane (przenoszone do puli do losowania, po wykonaniu operacji 1-szej)
 	vector <obiekt> m2_operacje_drugie; //operacje drugie dla m2
-	pair < vector <obiekt>, vector <obiekt> > para;
-	vector <pair < vector <obiekt>, vector <obiekt> > > inst;
+	vector <int> m1_kolejnosc; // x w kolejnych losowaniach przy insert_M dla m1
+	vector <int> m2_kolejnosc; // x w kolejnych losowaniach przy insert_M dla m2
+	tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > krotka;
+	vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > > inst; // m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie
 	int liczba_instancji;
 	int liczba_operacji;
 	int czas_operacji1;
@@ -479,6 +707,7 @@ int main()
 	int suma_maint_M1;
 	int suma_idle_M2;
 	int suma_maint_M2;
+	int co_mutowac;
 	uchwyt >> liczba_instancji;
 	uchwyt.close();
 	for (int i = 1; i <= liczba_instancji; i++)
@@ -513,32 +742,67 @@ int main()
 		uchwyt.close();
 		sort(m1.begin(), m1.end(), compare);
 		sort(m2.begin(), m2.end(), compare);
+		m1_pierwotne = m1;
+		m2_pierwotne = m2;
 		//display(m1, "M1", m2, "M2");
-		insert_M(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2);
-		//display(m1, "M1", m2, "M2");
+		krotka = make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie);
+		insert_M(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);
+		display(m1, "M1", m2, "M2");
 		czas_poczatkowy = max(m1[m1.size() - 1].czas_konca, m2[m2.size() - 1].czas_konca);
-		inst.push_back(make_pair(m1, m2)); // odwolanie to : inst[0].first/second[index].pole
+		inst.push_back(krotka); // zapisanie instancji 
 		srand(time(NULL));
-		//for (int k = 0; k < liczba_iteracji; k++) // liczba iteracji na sztywno
-		//{
-		//	for (int m = 0; m < inst.size(); m++) // po rozmiarze tablicy instancji
-		//	{
-		//		if (rand() % 100 < procent_mutacji)
-		//		{
-		//			inst.push_back(mutacja(inst[m].first, inst[m].second));
-		//		}
-		//		cout << k << "\t" << m << "\t" << inst.size() << endl;
-		//		
-		//	}
-		//	inst = selekcja(inst);
-		//	if (k % 10 == 0)
-		//	{
-		//		procent_mutacji *= 0.99;
-		//	}
-		//}
-		// w tym momencie musi juz zostac tylko jedna najlepsza instancja
-		// m1 = inst[0].first; znalezienie najlepszego w selekcji ... 
-		// m2 = inst[0].second;
+		for (int k = 0; k < liczba_iteracji; k++) // liczba iteracji na sztywno
+		{
+			for (int m = 0; m < inst.size(); m++) // po rozmiarze tablicy instancji
+			{
+				cout << m << endl;
+				if (rand() % 100 < procent_mutacji)
+				{
+					tie(ignore, ignore, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie) = inst[m];
+					co_mutowac = rand() % 4;
+					//cout << "co_mutowac = " << co_mutowac << endl;
+					switch (co_mutowac)
+					{
+						case 0:
+						{
+							mutacja(m1_operacje);
+							break;
+						}
+						case 1:
+						{
+							mutacja(m2_operacje);
+							break;
+						}
+						case 2:
+						{
+							mutacja(m1_operacje_drugie);
+							break;
+						}
+						case 3:
+						{
+							mutacja(m2_operacje_drugie);
+							break;
+						}
+					}
+					m1 = m1_pierwotne;
+					m2 = m2_pierwotne;
+					insert_kolejnosc(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);	
+					//cout << "Po mutacji" << endl;
+					//display(m1, "M1", m2, "M2");
+					inst.push_back(make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie));
+				}
+				//cout << k << "\t" << m << "\t" << inst.size() << endl;
+				
+			}
+			//inst = selekcja(inst);
+			if (k % 10 == 0)
+			{
+				procent_mutacji *= 0.99;
+			}
+		}
+		 /*w tym momencie musi juz zostac tylko jedna najlepsza instancja
+		 m1 = get<0>(inst[0]); znalezienie najlepszego w selekcji ... 
+		 m2 = get<1>(inst[0]);*/
 		
 		wypelnij_idle(m1);
 		wypelnij_idle(m2);
@@ -578,7 +842,7 @@ int main()
 			}
 			else // maint lub idle
 			{
-				wynik << " " << m2[k].typ << m2[k].numer << "_M2," << m2[k].czas_startu << ", " << m2[k].czas_trwania << ";";
+				wynik << " " << m2[k].typ << m2[k].numer << "_M2, " << m2[k].czas_startu << ", " << m2[k].czas_trwania << ";";
 				if (m2[k].typ == "maint")
 				{
 					suma_maint_M2 += m2[k].czas_trwania;
@@ -594,6 +858,12 @@ int main()
 		inst.clear();
 		m1.clear();
 		m2.clear();	
+		m1_operacje.clear();
+		m2_operacje.clear();
+		m1_operacje_drugie.clear();
+		m2_operacje_drugie.clear();
+		m1_kolejnosc.clear();
+		m2_kolejnosc.clear();
 	}
 }
 
