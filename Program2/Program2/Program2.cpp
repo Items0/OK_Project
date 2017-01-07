@@ -17,8 +17,10 @@ using namespace std;
 
 //global - sterowanie
 double global_procent_mutacji = 20;
+double global_procent_krzyzowania = 30;
 int liczba_iteracji = 50;
 int wielkosc_populacji = 50; // dla selekcji
+int poczatkowa_populacja = 10; 
 /////////////////////
 void display(vector <obiekt> &m1, string nazwa1, vector <obiekt> &m2, string nazwa2)
 {
@@ -605,12 +607,16 @@ void mutacja(vector <obiekt> &tab)
 	swap(tab[pozycja], tab[pozycja_cel]);
 }
 
-vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > > selekcja(vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > >  &inst, int wielkosc_populacji)
+krzyzowanie()
+{
+
+}
+vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > > selekcja(vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > >  &inst, int wielkosc_populacji)
 // liczba instancji = polowa (+1)
 {
 	int player1;
 	int player2;
-	vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > > nowy;
+	vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > > nowy;
 	if (inst.size() > wielkosc_populacji)
 	{
 		do
@@ -706,8 +712,9 @@ int main()
 	vector <obiekt> m2_operacje_drugie; //operacje drugie dla m2
 	vector <int> m1_kolejnosc; // x w kolejnych losowaniach przy insert_M dla m1
 	vector <int> m2_kolejnosc; // x w kolejnych losowaniach przy insert_M dla m2
-	tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > krotka;
-	vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > > inst; // m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie
+	tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > krotka;
+	vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > > inst;
+	// m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc
 	int liczba_instancji;
 	int liczba_operacji;
 	int czas_operacji1;
@@ -725,6 +732,7 @@ int main()
 	int suma_maint_M2;
 	int co_mutowac;
 	double procent_mutacji;
+	double procent_krzyzowania;
 	uchwyt >> liczba_instancji;
 	uchwyt.close();
 	for (int i = 1; i <= liczba_instancji; i++)
@@ -761,14 +769,27 @@ int main()
 		sort(m2.begin(), m2.end(), compare);
 		m1_pierwotne = m1;
 		m2_pierwotne = m2;
-		//display(m1, "M1", m2, "M2");	
-		insert_M(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);
-		krotka = make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie);
 		//display(m1, "M1", m2, "M2");
-		czas_poczatkowy = max(m1[m1.size() - 1].czas_konca, m2[m2.size() - 1].czas_konca);
-		inst.push_back(krotka); // zapisanie instancji 
+		for (int n = 0; n < poczatkowa_populacja; n++)
+		{
+			m1 = m1_pierwotne;
+			m2 = m2_pierwotne;
+			insert_M(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);
+			if (n == 0) // ustawia czas poczatkowy z 1_szej losowej 
+			{
+				czas_poczatkowy = max(m1[m1.size() - 1].czas_konca, m2[m2.size() - 1].czas_konca);
+			}
+			krotka = make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc);
+			display(m1, "M1", m2, "M2");
+			inst.push_back(krotka); // zapisanie instancji
+			m1.clear();
+			m2.clear();
+			m1_kolejnosc.clear();
+			m2_kolejnosc.clear();
+		} 
 		srand(time(NULL));
 		procent_mutacji = global_procent_mutacji;
+		procent_krzyzowania = global_procent_krzyzowania;
 		for (int k = 0; k < liczba_iteracji; k++) // liczba iteracji na sztywno
 		{
 			for (int m = 0; m < inst.size(); m++) // po rozmiarze tablicy instancji
@@ -776,7 +797,7 @@ int main()
 				cout << k << "\t" << m << endl;
 				if (rand() % 100 < procent_mutacji)
 				{
-					tie(ignore, ignore, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie) = inst[m];
+					tie(ignore, ignore, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc) = inst[m];
 					co_mutowac = rand() % 4;
 					//cout << "co_mutowac = " << co_mutowac << endl;
 					switch (co_mutowac)
@@ -807,21 +828,22 @@ int main()
 					insert_kolejnosc(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);
 					//cout << "Po mutacji" << endl;
 					//display(m1, "M1", m2, "M2");
-					inst.push_back(make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie));
-					if (m1.size() == 0)
-					{
-						cout << "error"; _getch();
-					}
+					krotka = make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc);
+					inst.push_back(krotka); 
+				}
+				if (rand() % 100 < procent_krzyzowania)
+				{
+					// wysyla 2 instancje
+					krzyzowanie
 				}
 				//cout << k << "\t" << m << "\t" << inst.size() << endl;
-
 			}
 			inst = selekcja(inst, wielkosc_populacji);
-			if (true)
+			if (k % 10 == 0) // sterowanie procentami
 			{
 				procent_mutacji *= 0.99;
-			}
-			 
+				procent_krzyzowania *= 0.99;
+			}	 
 		}
 		inst = selekcja(inst, 1);
 		//w tym momencie musi juz zostac tylko jedna najlepsza instancja
@@ -839,7 +861,6 @@ int main()
 		wynik << "M1:";
 		for (int k = 0; k < m1.size(); k++)
 		{
-
 			if (m1[k].typ == "op")
 			{
 				wynik << " " << m1[k].typ << m1[k].nr_operacji << "_" << m1[k].numer << ", " << m1[k].czas_startu << ", " << m1[k].czas_instancji << ", " << m1[k].czas_trwania << ";";
