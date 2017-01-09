@@ -20,7 +20,7 @@ double global_procent_mutacji = 20;
 double global_procent_krzyzowania = 30;
 int liczba_iteracji = 10;
 int wielkosc_populacji = 50; // dla selekcji
-int poczatkowa_populacja = 2; 
+int poczatkowa_populacja = 10; 
 /////////////////////
 void display(vector <obiekt> &m1, string nazwa1, vector <obiekt> &m2, string nazwa2)
 {
@@ -109,12 +109,12 @@ int zwroc_index(vector <obiekt> &m, int numer)
 	}
 }
 
-int zwroc_indexx(vector <obiekt> &m, int numer)
+int zwroc_indexx(vector <int> m, int numer)
 {
 	int index = -1;
 	for (int i = 0; i < m.size(); i++)
 	{
-		if (m[i].typ == "op" && m[i].numer == numer && m[i].czas_trwania != 0)
+		if (m[i] == numer)
 		{
 			index = i;
 			break;
@@ -636,11 +636,43 @@ void insert_wycinajacy(vector <obiekt> &m1_operacje, vector <obiekt> &m1_operacj
 	} while (liczba_przebiegow);
 }
 
+void insert_wycinajacy_z_ktorym(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, vector <obiekt> m2_operacje, vector <obiekt> m2_operacje_drugie, vector <int> m1_kolejnosc, vector <int> m2_kolejnosc, vector <int> &m1_kol_wyb, vector <int> &m2_kol_wyb)
+{
+	// kartka z ktorym
+	int x;
+	do
+	{
+		x = m1_kolejnosc[0]; //pierwszy z odtworzonej kolejnosci
+		m1_kolejnosc.erase(m1_kolejnosc.begin());
+		m1_kol_wyb.push_back(m1_operacje[x].numer);
+		if (m1_operacje[x].nr_operacji == 1)
+		{
+			m2_operacje.push_back(m2_operacje_drugie[zwroc_index(m2_operacje_drugie, m1_operacje[x].numer)]);
+			m2_operacje_drugie.erase(m2_operacje_drugie.begin() + zwroc_index(m2_operacje_drugie, m1_operacje[x].numer));
+		}
+		m1_operacje.erase(m1_operacje.begin() + x);
+		x = m2_kolejnosc[0]; //pierwszy z odtworzonej kolejnosci
+		m2_kolejnosc.erase(m2_kolejnosc.begin());
+		m2_kol_wyb.push_back(m2_operacje[x].numer);
+		if (m2_operacje[x].nr_operacji == 1)
+		{
+			m1_operacje.push_back(m1_operacje_drugie[zwroc_index(m1_operacje_drugie, m2_operacje[x].numer)]);
+			m1_operacje_drugie.erase(m1_operacje_drugie.begin() + zwroc_index(m1_operacje_drugie, m2_operacje[x].numer));
+		}
+		m2_operacje.erase(m2_operacje.begin() + x);
+		
+	} while (m1_kolejnosc.size());
+}
+
 bool compare(obiekt a, obiekt b)
 {
 	return (a.czas_startu < b.czas_startu);
 }
 
+bool klucz_sort(pair <int, int> a, pair <int, int> b)
+{
+	return (a.second < b.second);
+}
 /*bool tutaj(tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > a, tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt> > b)
 {
 if (max(get<0>(a)[get<0>(a).size() - 1].czas_konca, get<1>(a)[get<1>(a).size() - 1].czas_konca) < max(get<0>(b)[get<0>(b).size() - 1].czas_konca, get<1>(b)[get<1>(b).size() - 1].czas_konca))
@@ -665,27 +697,13 @@ void mutacja(vector <obiekt> &tab)
 	swap(tab[pozycja], tab[pozycja_cel]);
 }
 
-void roznica(vector <obiekt> &odjemna, vector <obiekt> odjemnik)
+void roznica(vector <int> &odjemna, vector <int> odjemnik)
 {
-	for (int i = 0; i < odjemna.size(); i++)
-	{
-		if (odjemna[i].typ == "maint")
-		{
-			odjemna.erase(odjemna.begin() + i);
-		}
-	}
 	for (int i = 0; i < odjemnik.size(); i++)
-	{
-		if (odjemnik[i].typ == "maint")
-		{
-			odjemnik.erase(odjemnik.begin() + i);
-		}
-	}
-	for (int i = 0; i < odjemnik.size() / 2; i++)
 	{
 		for (int k = 0; k < odjemna.size(); k++)
 		{
-			if (odjemna[k].numer == odjemnik[i].numer && odjemna[k].nr_operacji == odjemnik[i].nr_operacji)
+			if (odjemna[k] == odjemnik[i])
 			{
 				odjemna.erase(odjemna.begin() + k);
 				break;
@@ -704,31 +722,91 @@ tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vect
 	vector <obiekt> m2W_operacje, m2Z_operacje, m2N_operacje;
 	vector <obiekt> m1W_operacje_drugie, m1Z_operacje_drugie, m1N_operacje_drugie;
 	vector <obiekt> m2W_operacje_drugie, m2Z_operacje_drugie, m2N_operacje_drugie;
-	vector <int> m1_kolejnosc, m1N_kolejnosc, m1Z_kolejnosc;
-	vector <int> m2_kolejnosc, m2N_kolejnosc, m2Z_kolejnosc;
-	tie(m1W, m2W, m1W_operacje, m2W_operacje, m1W_operacje_drugie, m2W_operacje_drugie, m1_kolejnosc, m2_kolejnosc) = wyjsciowy;
+	vector <int> m1W_kolejnosc, m1N_kolejnosc, m1Z_kolejnosc;
+	vector <int> m2W_kolejnosc, m2N_kolejnosc, m2Z_kolejnosc;
+	tie(m1W, m2W, m1W_operacje, m2W_operacje, m1W_operacje_drugie, m2W_operacje_drugie, m1W_kolejnosc, m2W_kolejnosc) = wyjsciowy;
 	tie(m1Z, m2Z, m1Z_operacje, m2Z_operacje, m1Z_operacje_drugie, m2Z_operacje_drugie, m1Z_kolejnosc, m2Z_kolejnosc) = z_ktorym;
-	cout << "m1\t\t\tm2" << endl;
-	for (int i = 0; i < m1_kolejnosc.size(); i++)
+	tie(m1N, m2N, m1N_operacje, m2N_operacje, m1N_operacje_drugie, m2N_operacje_drugie, m1N_kolejnosc, m2N_kolejnosc) = nowy;
+	vector <int> m1_kol_wyb, m2_kol_wyb;
+	vector <int> m1_nowa_kolejnosc;
+	vector <int> m2_nowa_kolejnosc;
+	vector <pair <int, int> > do_sorta1, do_sorta2; // numer, index
+	/*vector <int> m1N_pierwsza_polowa = m1N_kolejnosc;*/
+	//m1N_pierwsza_polowa.resize(m1N_kolejnosc.size() / 2);
+	//m1N_pierwsza_polowa.shrink_to_fit();
+	insert_wycinajacy_z_ktorym(m1Z_operacje, m1Z_operacje_drugie, m2Z_operacje, m2Z_operacje_drugie, m1Z_kolejnosc, m2Z_kolejnosc, m1_kol_wyb, m2_kol_wyb);
+	//roznica(m1_kol_wyb, m1N_pierwsza_polowa);
+	insert_wycinajacy(m1W_operacje, m1W_operacje_drugie, m2W_operacje, m2W_operacje_drugie, m1W_kolejnosc, m2W_kolejnosc, m1W_kolejnosc.size() / 2);
+	int x;
+	do
 	{
-		cout << m1_kolejnosc[i] << "\t\t\t" << m2_kolejnosc[i] << endl;
+		do_sorta1.clear();
+		for (int i = 0; i < m1W_operacje.size(); i++)
+		{	
+			do_sorta1.push_back(make_pair(m1W_operacje[i].numer, zwroc_indexx(m1_kol_wyb, m1W_operacje[i].numer)));
+		}
+		sort(do_sorta1.begin(), do_sorta1.end(), klucz_sort);
+		x = zwroc_index(m1W_operacje, do_sorta1[0].first);
+		m1_nowa_kolejnosc.push_back(x);
+		//x = m1W_kolejnosc[0]; //pierwszy z odtworzonej kolejnosci
+		m1W_kolejnosc.erase(m1W_kolejnosc.begin());
+//		m1_kol_wyb.push_back(m1W_operacje[x].numer);
+		if (m1W_operacje[x].nr_operacji == 1)
+		{
+			m2W_operacje.push_back(m2W_operacje_drugie[zwroc_index(m2W_operacje_drugie, m1W_operacje[x].numer)]);
+			m2W_operacje_drugie.erase(m2W_operacje_drugie.begin() + zwroc_index(m2W_operacje_drugie, m1W_operacje[x].numer));
+		}
+		m1W_operacje.erase(m1W_operacje.begin() + x);
+		
+		do_sorta2.clear();
+		for (int i = 0; i < m2W_operacje.size(); i++)
+		{
+			do_sorta2.push_back(make_pair(m2W_operacje[i].numer, zwroc_indexx(m2_kol_wyb, m2W_operacje[i].numer)));
+		}
+		sort(do_sorta2.begin(), do_sorta2.end(), klucz_sort);
+		x = zwroc_index(m2W_operacje, do_sorta2[0].first);
+		m2_nowa_kolejnosc.push_back(x);
+		//x = m2W_kolejnosc[0]; //pierwszy z odtworzonej kolejnosci
+		m2W_kolejnosc.erase(m2W_kolejnosc.begin());
+		//m2_kol_wyb.push_back(m2W_operacje[x].numer);
+		if (m2W_operacje[x].nr_operacji == 1)
+		{
+			m1W_operacje.push_back(m1W_operacje_drugie[zwroc_index(m1W_operacje_drugie, m2W_operacje[x].numer)]);
+			m1W_operacje_drugie.erase(m1W_operacje_drugie.begin() + zwroc_index(m1W_operacje_drugie, m2W_operacje[x].numer));
+		}
+		m2W_operacje.erase(m2W_operacje.begin() + x);
+	} while (m1W_operacje.size());
+	m1N_kolejnosc.resize(m1N_kolejnosc.size() / 2);
+	m1N_kolejnosc.shrink_to_fit();
+	m1N_kolejnosc.insert(m1N_kolejnosc.end(), m1_nowa_kolejnosc.begin(), m1_nowa_kolejnosc.end());
+	m2N_kolejnosc.resize(m2N_kolejnosc.size() / 2);
+	m2N_kolejnosc.shrink_to_fit();
+	m2N_kolejnosc.insert(m2N_kolejnosc.end(), m2_nowa_kolejnosc.begin(), m2_nowa_kolejnosc.end());
+	cout << "OK" << endl;
+	nowy = make_tuple(m1N, m2N, m1N_operacje, m2N_operacje, m1N_operacje_drugie, m2N_operacje_drugie, m1N_kolejnosc, m2N_kolejnosc);
+	
+	/*cout << "m1\t\t\tm2" << endl;
+	for (int i = 0; i < m1W_kolejnosc.size(); i++)
+	{
+		cout << m1W_kolejnosc[i] << "\t\t\t" << m2W_kolejnosc[i] << endl;
 	}
 	cout << "kolej dla z: " << endl;
-	for (int i = 0; i < m1_kolejnosc.size(); i++)
+	for (int i = 0; i < m1W_kolejnosc.size(); i++)
 	{
 		cout << m1Z_kolejnosc[i] << "\t\t\t" << m2Z_kolejnosc[i] << endl;
-	}
-	tie(m1N, m2N, m1N_operacje, m2N_operacje, m1N_operacje_drugie, m2N_operacje_drugie, m1N_kolejnosc, m2N_kolejnosc) = nowy;
+	}*/
+	//tie(m1N, m2N, m1N_operacje, m2N_operacje, m1N_operacje_drugie, m2N_operacje_drugie, m1N_kolejnosc, m2N_kolejnosc) = nowy;
 	//vector <int> kolejnosc1 = get<6>(wyjsciowy);
 	//vector <int> kolejnosc2 = get<7>(wyjsciowy);
 	cout << "pierwszy" << endl;
 	display(m1W, "M1", m2W, "M2");
 	cout << "drugi" << endl;
 	display(m1Z, "M1", m2Z, "M2");
-	roznica(m1Z, m1W);
-	roznica(m2Z, m2W);
-	cout << "po" << endl;
-	display(m1Z, "M1", m2Z, "M2");
+	return nowy;
+	//roznica(m1Z, m1W);
+	//roznica(m2Z, m2W);
+	//cout << "po" << endl;
+	//display(m1Z, "M1", m2Z, "M2");
 	//do
 	//{ // usuwa z operacji1 wg kolejnosci
 	//	if (get<2>(wyjsciowy)[get<6>(wyjsciowy)[0]].nr_operacji == 1)
@@ -740,68 +818,65 @@ tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vect
 	//	get<6>(wyjsciowy).erase(get<6>(wyjsciowy).begin());
 	//} while (get<6>(wyjsciowy).size() > kolejnosc1.size() / 2);
 	// w tym momencie, podmieniaj w nowym na elemnty w kolejnosci z "z_ktorym"
-	insert_wycinajacy(m1W_operacje, m1W_operacje_drugie, m2W_operacje, m2W_operacje_drugie, m1_kolejnosc, m2_kolejnosc, m1_kolejnosc.size() / 2);
-	int x;
-	int index;
-	do
-	{
-		x = m1_kolejnosc[0];
-		m1Z[0].czas_konca = 0;
-		m1Z[0].czas_startu = 0;
-		m1Z[0].czas_trwania = 0;
-		m1Z[0].ruszaj = true;
-		if (m1W_operacje[x].nr_operacji == 1)
-		{
-			m2W_operacje.push_back(m2W_operacje_drugie[zwroc_indexx(m2W_operacje_drugie, m1W_operacje[x].numer)]); 
-			m2W_operacje_drugie.erase(m2W_operacje_drugie.begin() + zwroc_indexx(m2W_operacje_drugie, m1W_operacje[x].numer));
-		}
-		index = zwroc_indexx(m1N_operacje, m1W_operacje[x].numer); // szuka elementu na m1, operacjach 1-szych
-		if (index != -1)
-		{
-			m1N_operacje[index] = m1Z[0];
-		}
-		else
-		{
-			index = zwroc_indexx(m1N_operacje_drugie, m1W_operacje[x].numer);
-			m1N_operacje_drugie[index] = m1Z[0];
-		}
-		m1W_operacje.erase(m1W_operacje.begin() + x); //odkomentuj if wyjebie
-		m1Z.erase(m1Z.begin());
-		m1_kolejnosc.erase(m1_kolejnosc.begin());
+	//insert_wycinajacy(m1W_operacje, m1W_operacje_drugie, m2W_operacje, m2W_operacje_drugie, m1W_kolejnosc, m2W_kolejnosc, m1W_kolejnosc.size() / 2);
+	//int x;
+	//int index;
+	//do
+	//{
+	//	x = m1W_kolejnosc[0];
+	//	m1Z[0].czas_konca = 0;
+	//	m1Z[0].czas_startu = 0;
+	//	m1Z[0].czas_trwania = 0;
+	//	m1Z[0].ruszaj = true;
+	//	if (m1W_operacje[x].nr_operacji == 1)
+	//	{
+	//		m2W_operacje.push_back(m2W_operacje_drugie[zwroc_indexx(m2W_operacje_drugie, m1W_operacje[x].numer)]); 
+	//		m2W_operacje_drugie.erase(m2W_operacje_drugie.begin() + zwroc_indexx(m2W_operacje_drugie, m1W_operacje[x].numer));
+	//	}
+	//	index = zwroc_indexx(m1N_operacje, m1W_operacje[x].numer); // szuka elementu na m1, operacjach 1-szych
+	//	if (index != -1)
+	//	{
+	//		m1N_operacje[index] = m1Z[0];
+	//	}
+	//	else
+	//	{
+	//		index = zwroc_indexx(m1N_operacje_drugie, m1W_operacje[x].numer);
+	//		m1N_operacje_drugie[index] = m1Z[0];
+	//	}
+	//	m1W_operacje.erase(m1W_operacje.begin() + x); //odkomentuj if wyjebie
+	//	m1Z.erase(m1Z.begin());
+	//	m1W_kolejnosc.erase(m1W_kolejnosc.begin());
 
-		x = m2_kolejnosc[0];
-		m2Z[0].czas_konca = 0;
-		m2Z[0].czas_startu = 0;
-		m2Z[0].czas_trwania = 0;
-		m2Z[0].ruszaj = true;
-		if (m2W_operacje[x].nr_operacji == 1)
-		{
-			m1W_operacje.push_back(m1W_operacje_drugie[zwroc_indexx(m1W_operacje_drugie, m2W_operacje[x].numer)]);
-			m1W_operacje_drugie.erase(m1W_operacje_drugie.begin() + zwroc_indexx(m1W_operacje_drugie, m2W_operacje[x].numer));
-		}
-		/*if (m2Z[0].nr_operacji == 1)
-		{
-			m1W_operacje.push_back(m1W_operacje_drugie[zwroc_indexx(m1W_operacje_drugie, m2Z[0].numer)]);
-			m1W_operacje_drugie.erase(m1W_operacje_drugie.begin() + zwroc_indexx(m1W_operacje_drugie, m2Z[0].numer));
-		}*/
-		index = zwroc_indexx(m2N_operacje, m2W_operacje[x].numer); // szuka elementu na m2, operacjach 1-szych
-		if (index != -1)
-		{
-			m2N_operacje[index] = m2Z[0];
-		}
-		else
-		{
-			index = zwroc_indexx(m2N_operacje_drugie, m2W_operacje[x].numer);
-			m2N_operacje_drugie[index] = m2Z[0];
-		}
-		m2W_operacje.erase(m2W_operacje.begin() + x); //odkomentuj if wyjebie
-		m2Z.erase(m2Z.begin());
-		m2_kolejnosc.erase(m2_kolejnosc.begin());
-	}
-	while (m1_kolejnosc.size());
-	cout << "OK" << endl;
-	nowy = make_tuple(m1N, m2N, m1N_operacje, m2N_operacje, m1N_operacje_drugie, m2N_operacje_drugie, m1N_kolejnosc, m2N_kolejnosc);
-	return nowy;	
+	//	x = m2W_kolejnosc[0];
+	//	m2Z[0].czas_konca = 0;
+	//	m2Z[0].czas_startu = 0;
+	//	m2Z[0].czas_trwania = 0;
+	//	m2Z[0].ruszaj = true;
+	//	if (m2W_operacje[x].nr_operacji == 1)
+	//	{
+	//		m1W_operacje.push_back(m1W_operacje_drugie[zwroc_indexx(m1W_operacje_drugie, m2W_operacje[x].numer)]);
+	//		m1W_operacje_drugie.erase(m1W_operacje_drugie.begin() + zwroc_indexx(m1W_operacje_drugie, m2W_operacje[x].numer));
+	//	}
+	//	/*if (m2Z[0].nr_operacji == 1)
+	//	{
+	//		m1W_operacje.push_back(m1W_operacje_drugie[zwroc_indexx(m1W_operacje_drugie, m2Z[0].numer)]);
+	//		m1W_operacje_drugie.erase(m1W_operacje_drugie.begin() + zwroc_indexx(m1W_operacje_drugie, m2Z[0].numer));
+	//	}*/
+	//	index = zwroc_indexx(m2N_operacje, m2W_operacje[x].numer); // szuka elementu na m2, operacjach 1-szych
+	//	if (index != -1)
+	//	{
+	//		m2N_operacje[index] = m2Z[0];
+	//	}
+	//	else
+	//	{
+	//		index = zwroc_indexx(m2N_operacje_drugie, m2W_operacje[x].numer);
+	//		m2N_operacje_drugie[index] = m2Z[0];
+	//	}
+	//	m2W_operacje.erase(m2W_operacje.begin() + x); //odkomentuj if wyjebie
+	//	m2Z.erase(m2Z.begin());
+	//	m2W_kolejnosc.erase(m2W_kolejnosc.begin());
+	//}
+	//while (m1W_kolejnosc.size());
 }
 
 vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > > selekcja(vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > >  &inst, int wielkosc_populacji)
@@ -892,7 +967,7 @@ void wypelnij_idle(vector <obiekt> &maszyna)
 
 int main()
 {
-	//srand(time(NULL));
+	srand(time(NULL));
 	string nazwa = "../../Instancje/";
 	string nazwa_rozw = "../../Rozwiazania/";
 	fstream uchwyt("../../LiczbaInstancji.txt", ios::in);
@@ -1041,12 +1116,12 @@ int main()
 					m1 = m1_pierwotne;
 					m2 = m2_pierwotne;
 					insert_kolejnosc(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);
-					cout << "Po krzyzowaniu" << endl;
-					display(m1, "M1", m2, "M2");
+				/*	cout << "Po krzyzowaniu" << endl;
+					display(m1, "M1", m2, "M2");*/
 					krotka = make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc);
 					inst.push_back(krotka);
 				}
-				//cout << k << "\t" << m << "\t" << inst.size() << endl;
+				cout << k << "\t" << m << "\t" << inst.size() << endl;
 			
 			}
 			inst = selekcja(inst, wielkosc_populacji);
