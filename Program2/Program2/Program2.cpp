@@ -20,7 +20,7 @@ double global_procent_mutacji = 20;
 double global_procent_krzyzowania = 30;
 int liczba_iteracji = 10;
 int wielkosc_populacji = 50; // dla selekcji
-int poczatkowa_populacja = 10; 
+int poczatkowa_populacja = 2; 
 /////////////////////
 void display(vector <obiekt> &m1, string nazwa1, vector <obiekt> &m2, string nazwa2)
 {
@@ -168,9 +168,10 @@ void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, v
 						else
 						{
 							// roznica czasow (kara - normalny) bedzie mniejsza, niz wolne miejsce, wiec skonczy wczesniej
-							if (m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
+							if ((m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
 								&& maszyna1.size() > i + 1 && maszyna1[i].typ == "maint" && maszyna1[i].maint_kara == 0
 								&& maszyna1[i + 1].czas_startu - maszyna1[i].czas_konca > m1_operacje[x].czas_z_kara - (maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca))
+								|| (m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca && i + 1 == maszyna1.size()))
 							{
 								m1_operacje[x].czas_trwania = m1_operacje[x].czas_z_kara;
 								maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
@@ -198,6 +199,7 @@ void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, v
 					m1_operacje[x].czas_startu = koniec_pierwszej_op;
 					m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
 					m1_operacje[x].czas_konca = m1_operacje[x].czas_startu + m1_operacje[x].czas_trwania;
+					m1_operacje[x].ruszaj = false; // 09/01/17
 					maszyna1.insert(maszyna1.begin(), m1_operacje[x]);
 					czy = false;
 				}
@@ -215,9 +217,10 @@ void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, v
 						}
 						else
 						{
-							if (koniec_pierwszej_op <= maszyna1[i - 1].czas_konca && m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
+							if ((koniec_pierwszej_op <= maszyna1[i - 1].czas_konca && m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
 								&& maszyna1.size() > i + 1 && maszyna1[i].typ == "maint" && maszyna1[i].maint_kara == 0
 								&& maszyna1[i + 1].czas_startu - maszyna1[i].czas_konca > m1_operacje[x].czas_z_kara - (maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca))
+								|| (koniec_pierwszej_op <= maszyna1[i - 1].czas_konca && m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca && i + 1 == maszyna1.size()))
 							{
 								m1_operacje[x].czas_trwania = m1_operacje[x].czas_z_kara;
 								maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
@@ -276,9 +279,10 @@ void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, v
 						}
 						else
 						{
-							if (m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
+							if ((m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
 								&& maszyna2.size() > i + 1 && maszyna2[i].typ == "maint" && maszyna2[i].maint_kara == 0
 								&& maszyna2[i + 1].czas_startu - maszyna2[i].czas_konca > m2_operacje[x].czas_z_kara - (maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca))
+								|| (m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca && i + 1 == maszyna2.size()))
 							{
 								m2_operacje[x].czas_trwania = m2_operacje[x].czas_z_kara;
 								maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
@@ -306,6 +310,7 @@ void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, v
 					m2_operacje[x].czas_startu = koniec_pierwszej_op;
 					m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
 					m2_operacje[x].czas_konca = m2_operacje[x].czas_startu + m2_operacje[x].czas_trwania;
+					m2_operacje[x].ruszaj = false; // 09/01/17
 					maszyna2.insert(maszyna2.begin(), m2_operacje[x]);
 					czy = false;
 				}
@@ -323,9 +328,10 @@ void insert_M(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_drugie, v
 						}
 						else
 						{
-							if (koniec_pierwszej_op <= maszyna2[i - 1].czas_konca && m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
+							if ((koniec_pierwszej_op <= maszyna2[i - 1].czas_konca && m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
 								&& maszyna2.size() > i + 1 && maszyna2[i].typ == "maint" && maszyna2[i].maint_kara == 0
 								&& maszyna2[i + 1].czas_startu - maszyna2[i].czas_konca > m2_operacje[x].czas_z_kara - (maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca))
+								|| (koniec_pierwszej_op <= maszyna2[i - 1].czas_konca && m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca && i + 1 == maszyna2.size()))
 							{
 								m2_operacje[x].czas_trwania = m2_operacje[x].czas_z_kara;
 								maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
@@ -402,9 +408,10 @@ void insert_kolejnosc(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_d
 						else
 						{
 							// roznica czasow (kara - normalny) bedzie mniejsza, niz wolne miejsce, wiec skonczy wczesniej
-							if (m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
+							if ((m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
 								&& maszyna1.size() > i + 1 && maszyna1[i].typ == "maint" && maszyna1[i].maint_kara == 0
 								&& maszyna1[i + 1].czas_startu - maszyna1[i].czas_konca > m1_operacje[x].czas_z_kara - (maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca))
+								|| (m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca && i + 1 == maszyna1.size()))
 							{
 								m1_operacje[x].czas_trwania = m1_operacje[x].czas_z_kara;
 								maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
@@ -432,6 +439,7 @@ void insert_kolejnosc(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_d
 					m1_operacje[x].czas_startu = koniec_pierwszej_op;
 					m1_operacje[x].czas_trwania = m1_operacje[x].czas_instancji;
 					m1_operacje[x].czas_konca = m1_operacje[x].czas_startu + m1_operacje[x].czas_trwania;
+					m1_operacje[x].ruszaj = false; // 09/01/17
 					maszyna1.insert(maszyna1.begin(), m1_operacje[x]);
 					czy = false;
 				}
@@ -449,9 +457,10 @@ void insert_kolejnosc(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_d
 						}
 						else
 						{
-							if (koniec_pierwszej_op <= maszyna1[i - 1].czas_konca && m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
+							if ((koniec_pierwszej_op <= maszyna1[i - 1].czas_konca && m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca
 								&& maszyna1.size() > i + 1 && maszyna1[i].typ == "maint" && maszyna1[i].maint_kara == 0
 								&& maszyna1[i + 1].czas_startu - maszyna1[i].czas_konca > m1_operacje[x].czas_z_kara - (maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca))
+								|| (koniec_pierwszej_op <= maszyna1[i - 1].czas_konca && m1_operacje[x].czas_z_kara - m1_operacje[x].czas_instancji < maszyna1[i].czas_startu - maszyna1[i - 1].czas_konca && i + 1 == maszyna1.size()))
 							{
 								m1_operacje[x].czas_trwania = m1_operacje[x].czas_z_kara;
 								maszyna1.insert(maszyna1.begin() + i, m1_operacje[x]);
@@ -487,7 +496,6 @@ void insert_kolejnosc(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_d
 		}
 		if (m2_operacje.size() != 0)
 		{
-			x = rand() % m2_operacje.size();
 			x = m2_kolejnosc[0]; //pierwszy z odtworzonej kolejnosci
 			m2_kolejnosc.erase(m2_kolejnosc.begin());
 			if (m2_operacje[x].nr_operacji == 1)
@@ -511,9 +519,10 @@ void insert_kolejnosc(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_d
 						}
 						else
 						{
-							if (m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
+							if ((m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
 								&& maszyna2.size() > i + 1 && maszyna2[i].typ == "maint" && maszyna2[i].maint_kara == 0
 								&& maszyna2[i + 1].czas_startu - maszyna2[i].czas_konca > m2_operacje[x].czas_z_kara - (maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca))
+								|| (m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca && i + 1 == maszyna2.size()))
 							{
 								m2_operacje[x].czas_trwania = m2_operacje[x].czas_z_kara;
 								maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
@@ -541,6 +550,7 @@ void insert_kolejnosc(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_d
 					m2_operacje[x].czas_startu = koniec_pierwszej_op;
 					m2_operacje[x].czas_trwania = m2_operacje[x].czas_instancji;
 					m2_operacje[x].czas_konca = m2_operacje[x].czas_startu + m2_operacje[x].czas_trwania;
+					m2_operacje[x].ruszaj = false; // 09/01/17
 					maszyna2.insert(maszyna2.begin(), m2_operacje[x]);
 					czy = false;
 				}
@@ -558,9 +568,10 @@ void insert_kolejnosc(vector <obiekt> m1_operacje, vector <obiekt> m1_operacje_d
 						}
 						else
 						{
-							if (koniec_pierwszej_op <= maszyna2[i - 1].czas_konca && m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
+							if ((koniec_pierwszej_op <= maszyna2[i - 1].czas_konca && m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca
 								&& maszyna2.size() > i + 1 && maszyna2[i].typ == "maint" && maszyna2[i].maint_kara == 0
 								&& maszyna2[i + 1].czas_startu - maszyna2[i].czas_konca > m2_operacje[x].czas_z_kara - (maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca))
+								|| (koniec_pierwszej_op <= maszyna2[i - 1].czas_konca && m2_operacje[x].czas_z_kara - m2_operacje[x].czas_instancji < maszyna2[i].czas_startu - maszyna2[i - 1].czas_konca && i + 1 == maszyna2.size()))
 							{
 								m2_operacje[x].czas_trwania = m2_operacje[x].czas_z_kara;
 								maszyna2.insert(maszyna2.begin() + i, m2_operacje[x]);
@@ -693,15 +704,20 @@ tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vect
 	vector <obiekt> m2W_operacje, m2Z_operacje, m2N_operacje;
 	vector <obiekt> m1W_operacje_drugie, m1Z_operacje_drugie, m1N_operacje_drugie;
 	vector <obiekt> m2W_operacje_drugie, m2Z_operacje_drugie, m2N_operacje_drugie;
-	vector <int> m1_kolejnosc, m1N_kolejnosc;
-	vector <int> m2_kolejnosc, m2N_kolejnosc;
+	vector <int> m1_kolejnosc, m1N_kolejnosc, m1Z_kolejnosc;
+	vector <int> m2_kolejnosc, m2N_kolejnosc, m2Z_kolejnosc;
 	tie(m1W, m2W, m1W_operacje, m2W_operacje, m1W_operacje_drugie, m2W_operacje_drugie, m1_kolejnosc, m2_kolejnosc) = wyjsciowy;
+	tie(m1Z, m2Z, m1Z_operacje, m2Z_operacje, m1Z_operacje_drugie, m2Z_operacje_drugie, m1Z_kolejnosc, m2Z_kolejnosc) = z_ktorym;
 	cout << "m1\t\t\tm2" << endl;
 	for (int i = 0; i < m1_kolejnosc.size(); i++)
 	{
 		cout << m1_kolejnosc[i] << "\t\t\t" << m2_kolejnosc[i] << endl;
 	}
-	tie(m1Z, m2Z, m1Z_operacje, m2Z_operacje, m1Z_operacje_drugie, m2Z_operacje_drugie, ignore, ignore) = z_ktorym;
+	cout << "kolej dla z: " << endl;
+	for (int i = 0; i < m1_kolejnosc.size(); i++)
+	{
+		cout << m1Z_kolejnosc[i] << "\t\t\t" << m2Z_kolejnosc[i] << endl;
+	}
 	tie(m1N, m2N, m1N_operacje, m2N_operacje, m1N_operacje_drugie, m2N_operacje_drugie, m1N_kolejnosc, m2N_kolejnosc) = nowy;
 	//vector <int> kolejnosc1 = get<6>(wyjsciowy);
 	//vector <int> kolejnosc2 = get<7>(wyjsciowy);
