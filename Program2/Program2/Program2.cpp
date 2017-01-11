@@ -16,11 +16,11 @@
 using namespace std;
 
 //global - sterowanie
-double global_procent_mutacji = 20;
-double global_procent_krzyzowania = 30;
-int liczba_iteracji = 30;
-int wielkosc_populacji = 50; // dla selekcji
-int poczatkowa_populacja = 10; 
+int global_procent_mutacji;// = 20;
+int global_procent_krzyzowania;// = 30;
+int liczba_iteracji;// = 10;
+int wielkosc_populacji;// = 50; // dla selekcji
+int poczatkowa_populacja;// = 10;
 /////////////////////
 void display(vector <obiekt> &m1, string nazwa1, vector <obiekt> &m2, string nazwa2)
 {
@@ -739,51 +739,11 @@ tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vect
 	tie(m1W, m2W, m1W_operacje, m2W_operacje, m1W_operacje_drugie, m2W_operacje_drugie, m1W_kolejnosc, m2W_kolejnosc) = wyjsciowy;
 	tie(m1Z, m2Z, m1Z_operacje, m2Z_operacje, m1Z_operacje_drugie, m2Z_operacje_drugie, m1Z_kolejnosc, m2Z_kolejnosc) = z_ktorym;
 	tie(m1N, m2N, m1N_operacje, m2N_operacje, m1N_operacje_drugie, m2N_operacje_drugie, m1N_kolejnosc, m2N_kolejnosc) = nowy;
-	/*cout << "start" << endl;
-	display(m1W, "m1W", m2W, "m2W");
-	cout << "m1W_op \t\t m2W_op" << endl;
-	for (int i = 0; i < m1W_operacje.size(); i++)
-	{
-		cout << m1W_operacje[i].numer << "\t\t" << m2W_operacje[i].numer << endl;
-	}
-	cout << "m1W_op2 \t\t m2W_op2" << endl;
-	for (int i = 0; i < m1W_operacje_drugie.size(); i++)
-	{
-		cout << m1W_operacje_drugie[i].numer << "\t\t" << m2W_operacje_drugie[i].numer << endl;
-	}
-	cout << "m1W_kol \t\t m2W_kol" << endl;
-	for (int i = 0; i < m1W_kolejnosc.size(); i++)
-	{
-		cout << m1W_kolejnosc[i] << "\t\t" << m2W_kolejnosc[i] << endl;
-	}
-	cout << "end" << endl;
-	cout << "start - Z" << endl;
-	display(m1Z, "m1Z", m2Z, "m2Z");
-	cout << "m1Z_op \t\t m2Z_op" << endl;
-	for (int i = 0; i < m1Z_operacje.size(); i++)
-	{
-		cout << m1Z_operacje[i].numer << "\t\t" << m2Z_operacje[i].numer << endl;
-	}
-	cout << "m1Z_op2 \t\t m2Z_op2" << endl;
-	for (int i = 0; i < m1Z_operacje_drugie.size(); i++)
-	{
-		cout << m1Z_operacje_drugie[i].numer << "\t\t" << m2Z_operacje_drugie[i].numer << endl;
-	}
-	cout << "m1Z_kol \t\t m2Z_kol" << endl;
-	for (int i = 0; i < m1Z_kolejnosc.size(); i++)
-	{
-		cout << m1Z_kolejnosc[i] << "\t\t" << m2Z_kolejnosc[i] << endl;
-	}
-	cout << "end - Z" << endl;*/
 	vector <int> m1_kol_wyb, m2_kol_wyb;
 	vector <int> m1_nowa_kolejnosc;
 	vector <int> m2_nowa_kolejnosc;
 	vector <pair <int, int> > do_sorta1, do_sorta2; // numer, index
-	/*vector <int> m1N_pierwsza_polowa = m1N_kolejnosc;*/
-	//m1N_pierwsza_polowa.resize(m1N_kolejnosc.size() / 2);
-	//m1N_pierwsza_polowa.shrink_to_fit();
 	insert_wycinajacy_z_ktorym(m1Z_operacje, m1Z_operacje_drugie, m2Z_operacje, m2Z_operacje_drugie, m1Z_kolejnosc, m2Z_kolejnosc, m1_kol_wyb, m2_kol_wyb);
-	//roznica(m1_kol_wyb, m1N_pierwsza_polowa);
 	insert_wycinajacy(m1W_operacje, m1W_operacje_drugie, m2W_operacje, m2W_operacje_drugie, m1W_kolejnosc, m2W_kolejnosc, m1W_kolejnosc.size() / 2);
 	int x;
 	do
@@ -798,9 +758,7 @@ tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vect
 			sort(do_sorta1.begin(), do_sorta1.end(), klucz_sort);
 			x = zwroc_index(m1W_operacje, do_sorta1[0].first);
 			m1_nowa_kolejnosc.push_back(x);
-			//x = m1W_kolejnosc[0]; //pierwszy z odtworzonej kolejnosci
 			m1W_kolejnosc.erase(m1W_kolejnosc.begin());
-			//		m1_kol_wyb.push_back(m1W_operacje[x].numer);
 			if (m1W_operacje[x].nr_operacji == 1)
 			{
 				m2W_operacje.push_back(m2W_operacje_drugie[zwroc_index(m2W_operacje_drugie, m1W_operacje[x].numer)]);
@@ -817,18 +775,11 @@ tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vect
 				do_sorta2.push_back(make_pair(m2W_operacje[i].numer, zwroc_indexx(m2_kol_wyb, m2W_operacje[i].numer)));
 			}
 			sort(do_sorta2.begin(), do_sorta2.end(), klucz_sort);
-			/*if (m1W_operacje.size() == 0)
-			{
-				x = zwroc_index(m2W_operacje, m1W_operacje_drugie[0].numer);
-			}
-			else*/
 			{
 				x = zwroc_index(m2W_operacje, do_sorta2[0].first);
 			}
 			m2_nowa_kolejnosc.push_back(x);
-			//x = m2W_kolejnosc[0]; //pierwszy z odtworzonej kolejnosci
 			m2W_kolejnosc.erase(m2W_kolejnosc.begin());
-			//m2_kol_wyb.push_back(m2W_operacje[x].numer);
 			if (m2W_operacje[x].nr_operacji == 1)
 			{
 				m1W_operacje.push_back(m1W_operacje_drugie[zwroc_index(m1W_operacje_drugie, m2W_operacje[x].numer)]);
@@ -844,119 +795,9 @@ tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vect
 	m2N_kolejnosc.resize(m2N_kolejnosc.size() / 2);
 	m2N_kolejnosc.shrink_to_fit();
 	m2N_kolejnosc.insert(m2N_kolejnosc.end(), m2_nowa_kolejnosc.begin(), m2_nowa_kolejnosc.end());
-	cout << "OK" << endl;
-	/*cout << "start" << endl;
-	display(m1N, "m1N", m2N, "m2N");
-	cout << "m1N_op \t\t m2N_op" << endl;
-	for (int i = 0; i < m1N_operacje.size(); i++)
-	{
-		cout << m1N_operacje[i].numer << "\t\t" << m2N_operacje[i].numer << endl;
-	}
-	cout << "m1N_op2 \t\t m2N_op2" << endl;
-	for (int i = 0; i < m1N_operacje_drugie.size(); i++)
-	{
-		cout << m1N_operacje_drugie[i].numer << "\t\t" << m2N_operacje_drugie[i].numer << endl;
-	}
-	cout << "m1N_kol \t\t m2N_kol" << endl;
-	for (int i = 0; i < m1N_kolejnosc.size(); i++)
-	{
-		cout << m1N_kolejnosc[i] << "\t\t" << m2N_kolejnosc[i] << endl;
-	}
-	cout << "end" << endl;*/
+	//cout << "OK" << endl;
 	nowy = make_tuple(m1N, m2N, m1N_operacje, m2N_operacje, m1N_operacje_drugie, m2N_operacje_drugie, m1N_kolejnosc, m2N_kolejnosc);
-	
-	/*cout << "m1\t\t\tm2" << endl;
-	for (int i = 0; i < m1W_kolejnosc.size(); i++)
-	{
-		cout << m1W_kolejnosc[i] << "\t\t\t" << m2W_kolejnosc[i] << endl;
-	}
-	cout << "kolej dla z: " << endl;
-	for (int i = 0; i < m1W_kolejnosc.size(); i++)
-	{
-		cout << m1Z_kolejnosc[i] << "\t\t\t" << m2Z_kolejnosc[i] << endl;
-	}*/
-	//tie(m1N, m2N, m1N_operacje, m2N_operacje, m1N_operacje_drugie, m2N_operacje_drugie, m1N_kolejnosc, m2N_kolejnosc) = nowy;
-	//vector <int> kolejnosc1 = get<6>(wyjsciowy);
-	//vector <int> kolejnosc2 = get<7>(wyjsciowy);
-	/*cout << "pierwszy" << endl;
-	display(m1W, "M1", m2W, "M2");
-	cout << "drugi" << endl;
-	display(m1Z, "M1", m2Z, "M2");*/
 	return nowy;
-	//roznica(m1Z, m1W);
-	//roznica(m2Z, m2W);
-	//cout << "po" << endl;
-	//display(m1Z, "M1", m2Z, "M2");
-	//do
-	//{ // usuwa z operacji1 wg kolejnosci
-	//	if (get<2>(wyjsciowy)[get<6>(wyjsciowy)[0]].nr_operacji == 1)
-	//	{
-	//		get<3>(wyjsciowy).push_back(get<5>(wyjsciowy)[zwroc_index(get<5>(wyjsciowy), get<2>(wyjsciowy)[get<6>(wyjsciowy)[0]].numer)]);
-	//		get<5>(wyjsciowy).erase(get<5>(wyjsciowy).begin() + get<2>(wyjsciowy)[get<6>(wyjsciowy)[0]].numer);
-	//	}
-	//	get<2>(wyjsciowy).erase(get<2>(wyjsciowy).begin() + get<6>(wyjsciowy)[0]);
-	//	get<6>(wyjsciowy).erase(get<6>(wyjsciowy).begin());
-	//} while (get<6>(wyjsciowy).size() > kolejnosc1.size() / 2);
-	// w tym momencie, podmieniaj w nowym na elemnty w kolejnosci z "z_ktorym"
-	//insert_wycinajacy(m1W_operacje, m1W_operacje_drugie, m2W_operacje, m2W_operacje_drugie, m1W_kolejnosc, m2W_kolejnosc, m1W_kolejnosc.size() / 2);
-	//int x;
-	//int index;
-	//do
-	//{
-	//	x = m1W_kolejnosc[0];
-	//	m1Z[0].czas_konca = 0;
-	//	m1Z[0].czas_startu = 0;
-	//	m1Z[0].czas_trwania = 0;
-	//	m1Z[0].ruszaj = true;
-	//	if (m1W_operacje[x].nr_operacji == 1)
-	//	{
-	//		m2W_operacje.push_back(m2W_operacje_drugie[zwroc_indexx(m2W_operacje_drugie, m1W_operacje[x].numer)]); 
-	//		m2W_operacje_drugie.erase(m2W_operacje_drugie.begin() + zwroc_indexx(m2W_operacje_drugie, m1W_operacje[x].numer));
-	//	}
-	//	index = zwroc_indexx(m1N_operacje, m1W_operacje[x].numer); // szuka elementu na m1, operacjach 1-szych
-	//	if (index != -1)
-	//	{
-	//		m1N_operacje[index] = m1Z[0];
-	//	}
-	//	else
-	//	{
-	//		index = zwroc_indexx(m1N_operacje_drugie, m1W_operacje[x].numer);
-	//		m1N_operacje_drugie[index] = m1Z[0];
-	//	}
-	//	m1W_operacje.erase(m1W_operacje.begin() + x); //odkomentuj if wyjebie
-	//	m1Z.erase(m1Z.begin());
-	//	m1W_kolejnosc.erase(m1W_kolejnosc.begin());
-
-	//	x = m2W_kolejnosc[0];
-	//	m2Z[0].czas_konca = 0;
-	//	m2Z[0].czas_startu = 0;
-	//	m2Z[0].czas_trwania = 0;
-	//	m2Z[0].ruszaj = true;
-	//	if (m2W_operacje[x].nr_operacji == 1)
-	//	{
-	//		m1W_operacje.push_back(m1W_operacje_drugie[zwroc_indexx(m1W_operacje_drugie, m2W_operacje[x].numer)]);
-	//		m1W_operacje_drugie.erase(m1W_operacje_drugie.begin() + zwroc_indexx(m1W_operacje_drugie, m2W_operacje[x].numer));
-	//	}
-	//	/*if (m2Z[0].nr_operacji == 1)
-	//	{
-	//		m1W_operacje.push_back(m1W_operacje_drugie[zwroc_indexx(m1W_operacje_drugie, m2Z[0].numer)]);
-	//		m1W_operacje_drugie.erase(m1W_operacje_drugie.begin() + zwroc_indexx(m1W_operacje_drugie, m2Z[0].numer));
-	//	}*/
-	//	index = zwroc_indexx(m2N_operacje, m2W_operacje[x].numer); // szuka elementu na m2, operacjach 1-szych
-	//	if (index != -1)
-	//	{
-	//		m2N_operacje[index] = m2Z[0];
-	//	}
-	//	else
-	//	{
-	//		index = zwroc_indexx(m2N_operacje_drugie, m2W_operacje[x].numer);
-	//		m2N_operacje_drugie[index] = m2Z[0];
-	//	}
-	//	m2W_operacje.erase(m2W_operacje.begin() + x); //odkomentuj if wyjebie
-	//	m2Z.erase(m2Z.begin());
-	//	m2W_kolejnosc.erase(m2W_kolejnosc.begin());
-	//}
-	//while (m1W_kolejnosc.size());
 }
 
 vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > > selekcja(vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > >  &inst, int wielkosc_populacji)
@@ -1055,6 +896,7 @@ int main()
 	string nazwa = "../../Instancje/";
 	string nazwa_rozw = "../../Rozwiazania/";
 	fstream uchwyt("../../LiczbaInstancji.txt", ios::in);
+	fstream par_heur("../../HeurystykaGenerowanie.txt", ios::in);
 	fstream wynik;
 	vector <obiekt> m1_pierwotne; //maszyna 1
 	vector <obiekt> m2_pierwotne; //maszyna 2
@@ -1092,6 +934,9 @@ int main()
 	uchwyt.close();
 	for (int i = 1; i <= liczba_instancji; i++)
 	{
+		cout << i << " / " << liczba_instancji << "\r";
+		// global_procent_mutacji przez chwile przechowuje nr_inst, 
+		par_heur >> global_procent_mutacji >> global_procent_mutacji >> global_procent_krzyzowania >> liczba_iteracji >> wielkosc_populacji >> poczatkowa_populacja;
 		uchwyt.open(nazwa + to_string(i) + ".txt", ios::in);
 		uchwyt >> liczba_operacji;
 		for (int k = 1; k <= liczba_operacji; k++)
@@ -1150,7 +995,25 @@ int main()
 		{
 			for (int m = 0; m < inst.size(); m++) // po rozmiarze tablicy instancji
 			{
-				cout << k << "\t" << m << endl;
+				//cout << k << "\t" << m << endl;
+				if (rand() % 100 < procent_krzyzowania)
+				{
+					// wysyla 2 instancje
+					do
+					{
+						z_czym_krzyzowac = rand() % inst.size();
+					} while (m == z_czym_krzyzowac);
+					//cout << "m = " << m << "\t z_czym = " << z_czym_krzyzowac << endl;
+					tie(ignore, ignore, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc) = krzyzowanie(inst[m], inst[z_czym_krzyzowac]);
+
+					m1 = m1_pierwotne;
+					m2 = m2_pierwotne;
+					insert_kolejnosc(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);
+					/*	cout << "Po krzyzowaniu" << endl;
+					display(m1, "M1", m2, "M2");*/
+					krotka = make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc);
+					inst.push_back(krotka);
+				}
 				if (rand() % 100 < procent_mutacji)
 				{
 					tie(ignore, ignore, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc) = inst[m];
@@ -1186,34 +1049,15 @@ int main()
 					//display(m1, "M1", m2, "M2");
 					krotka = make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc);
 					inst.push_back(krotka); 
-				}
-				if (rand() % 100 < procent_krzyzowania)
-				{
-					// wysyla 2 instancje
-					do
-					{
-						z_czym_krzyzowac = rand() % inst.size();
-					} while (m == z_czym_krzyzowac);
-					//cout << "m = " << m << "\t z_czym = " << z_czym_krzyzowac << endl;
-					tie(ignore, ignore, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc) = krzyzowanie(inst[m], inst[z_czym_krzyzowac]);
-					
-					m1 = m1_pierwotne;
-					m2 = m2_pierwotne;
-					insert_kolejnosc(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);
-				/*	cout << "Po krzyzowaniu" << endl;
-					display(m1, "M1", m2, "M2");*/
-					krotka = make_tuple(m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc);
-					inst.push_back(krotka);
-				}
-				cout << k << "\t" << m << "\t" << inst.size() << endl;
-			
+				}				
+				//cout << k << "\t" << m << "\t" << inst.size() << endl;	
 			}
 			inst = selekcja(inst, wielkosc_populacji);
-			if (k % 10 == 0) // sterowanie procentami
-			{
+			//if (true) // sterowanie procentami
+			//{
 				procent_mutacji *= 0.99;
 				procent_krzyzowania *= 0.99;
-			}	 
+			//}	 
 		}
 		inst = selekcja(inst, 1);
 		//w tym momencie musi juz zostac tylko jedna najlepsza instancja
@@ -1280,5 +1124,7 @@ int main()
 		m1_kolejnosc.clear();
 		m2_kolejnosc.clear();
 	}
+	par_heur.close();
+
 }
 

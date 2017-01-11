@@ -109,6 +109,7 @@ int main()
 		{	
 			wyn << i << " 1 ";
 			czas_przerwy = min_czas_przerwy + rand() % (1 + max_czas_przerwy - min_czas_przerwy);
+			suma_czasow_m1 += czas_przerwy;
 			wyn << czas_przerwy << " ";
 			do
 			{
@@ -121,6 +122,7 @@ int main()
 		{
 			wyn << i << " 2 ";
 			czas_przerwy = min_czas_przerwy + rand() % (1 + max_czas_przerwy - min_czas_przerwy);
+			suma_czasow_m2 += czas_przerwy;
 			wyn << czas_przerwy << " ";
 			do
 			{
