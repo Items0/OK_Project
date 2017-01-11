@@ -728,16 +728,16 @@ tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vect
 {
 	tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > nowy = wyjsciowy;
 	//W - wyjsciowy, Z - z_ktorym, N - nowy
-	vector <obiekt> m1W, m1Z, m1N; 
-	vector <obiekt> m2W, m2Z, m2N;
+	vector <obiekt> m1N; 
+	vector <obiekt> m2N;
 	vector <obiekt> m1W_operacje, m1Z_operacje, m1N_operacje;
 	vector <obiekt> m2W_operacje, m2Z_operacje, m2N_operacje;
 	vector <obiekt> m1W_operacje_drugie, m1Z_operacje_drugie, m1N_operacje_drugie;
 	vector <obiekt> m2W_operacje_drugie, m2Z_operacje_drugie, m2N_operacje_drugie;
 	vector <int> m1W_kolejnosc, m1N_kolejnosc, m1Z_kolejnosc;
 	vector <int> m2W_kolejnosc, m2N_kolejnosc, m2Z_kolejnosc;
-	tie(m1W, m2W, m1W_operacje, m2W_operacje, m1W_operacje_drugie, m2W_operacje_drugie, m1W_kolejnosc, m2W_kolejnosc) = wyjsciowy;
-	tie(m1Z, m2Z, m1Z_operacje, m2Z_operacje, m1Z_operacje_drugie, m2Z_operacje_drugie, m1Z_kolejnosc, m2Z_kolejnosc) = z_ktorym;
+	tie(ignore, ignore, m1W_operacje, m2W_operacje, m1W_operacje_drugie, m2W_operacje_drugie, m1W_kolejnosc, m2W_kolejnosc) = wyjsciowy;
+	tie(ignore, ignore, m1Z_operacje, m2Z_operacje, m1Z_operacje_drugie, m2Z_operacje_drugie, m1Z_kolejnosc, m2Z_kolejnosc) = z_ktorym;
 	tie(m1N, m2N, m1N_operacje, m2N_operacje, m1N_operacje_drugie, m2N_operacje_drugie, m1N_kolejnosc, m2N_kolejnosc) = nowy;
 	vector <int> m1_kol_wyb, m2_kol_wyb;
 	vector <int> m1_nowa_kolejnosc;
