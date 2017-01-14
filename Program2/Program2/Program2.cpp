@@ -893,6 +893,7 @@ void wypelnij_idle(vector <obiekt> &maszyna)
 int main()
 {
 	srand(time(NULL));
+	int licznik = 0;
 	string nazwa = "../../Instancje/";
 	string nazwa_rozw = "../../Rozwiazania/";
 	fstream uchwyt("../../LiczbaInstancji.txt", ios::in);
@@ -900,6 +901,7 @@ int main()
 	fstream wynik;
 	vector <obiekt> m1_pierwotne; //maszyna 1
 	vector <obiekt> m2_pierwotne; //maszyna 2
+	vector <obiekt> m1_operacje_pierwotne, m2_operacje_pierwotne, m1_operacje_drugie_pierwotne, m2_operacje_drugie_pierwotne;
 	vector <obiekt> m1; //maszyna 1
 	vector <obiekt> m2; //maszyna 2
 	vector <obiekt> m1_operacje; //operacje dla m1
@@ -910,6 +912,17 @@ int main()
 	vector <int> m2_kolejnosc; // x w kolejnych losowaniach przy insert_M dla m2
 	tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > krotka;
 	vector <tuple < vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <obiekt>, vector <int>, vector <int> > > inst;
+
+	vector <int> Vglobal_procent_mutacji, Vglobal_procent_krzyzowania, Vliczba_iteracji, Vwielkosc_populacji, Vpoczatkowa_populacja;
+	while (par_heur >> global_procent_mutacji >> global_procent_krzyzowania >> liczba_iteracji >> wielkosc_populacji >> poczatkowa_populacja)
+	{
+		Vglobal_procent_mutacji.push_back(global_procent_krzyzowania);
+		Vglobal_procent_krzyzowania.push_back(liczba_iteracji);
+		Vliczba_iteracji.push_back(liczba_iteracji);
+		Vwielkosc_populacji.push_back(wielkosc_populacji);
+		Vpoczatkowa_populacja.push_back(poczatkowa_populacja);
+	}
+	par_heur.close();
 	// m1, m2, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc
 	int liczba_instancji;
 	int liczba_operacji;
@@ -932,11 +945,18 @@ int main()
 	int z_czym_krzyzowac;
 	uchwyt >> liczba_instancji;
 	uchwyt.close();
-	for (int i = 1; i <= liczba_instancji; i++)
+	for (int i = 0;;)
 	{
-		cout << i << " / " << liczba_instancji << "\r";
+		if (licznik % 16 == 0) i++;
+		if (i > liczba_instancji) break;
+		global_procent_krzyzowania = Vglobal_procent_krzyzowania[licznik % 16];
+		global_procent_mutacji = Vglobal_procent_mutacji[licznik % 16];
+		liczba_iteracji = Vliczba_iteracji[licznik % 16];
+		wielkosc_populacji = Vwielkosc_populacji[licznik % 16];
+		poczatkowa_populacja = Vpoczatkowa_populacja[licznik % 16];
+		cout << i << " / " << liczba_instancji << " ==> " << 1 + licznik % 16 << "\r";
 		// global_procent_mutacji przez chwile przechowuje nr_inst, 
-		par_heur >> global_procent_mutacji >> global_procent_mutacji >> global_procent_krzyzowania >> liczba_iteracji >> wielkosc_populacji >> poczatkowa_populacja;
+		
 		uchwyt.open(nazwa + to_string(i) + ".txt", ios::in);
 		uchwyt >> liczba_operacji;
 		for (int k = 1; k <= liczba_operacji; k++)
@@ -969,11 +989,19 @@ int main()
 		sort(m2.begin(), m2.end(), compare);
 		m1_pierwotne = m1;
 		m2_pierwotne = m2;
+		m1_operacje_pierwotne = m1_operacje;
+		m1_operacje_drugie_pierwotne = m1_operacje_drugie;
+		m2_operacje_pierwotne = m2_operacje;
+		m2_operacje_drugie_pierwotne = m2_operacje_drugie;
 		//display(m1, "M1", m2, "M2");
 		for (int n = 0; n < poczatkowa_populacja; n++)
 		{
 			m1 = m1_pierwotne;
 			m2 = m2_pierwotne;
+			m1_operacje = m1_operacje_pierwotne;
+			m1_operacje_drugie = m1_operacje_drugie_pierwotne;
+			m2_operacje = m2_operacje_pierwotne;
+			m2_operacje_drugie = m2_operacje_drugie_pierwotne;
 			insert_M(m1_operacje, m1_operacje_drugie, m1, m2_operacje, m2_operacje_drugie, m2, m1_kolejnosc, m2_kolejnosc);
 			if (n == 0) // ustawia czas poczatkowy z 1_szej losowej 
 			{
@@ -991,6 +1019,7 @@ int main()
 		//srand(time(NULL));
 		procent_mutacji = global_procent_mutacji;
 		procent_krzyzowania = global_procent_krzyzowania;
+
 		for (int k = 0; k < liczba_iteracji; k++) // liczba iteracji na sztywno
 		{
 			for (int m = 0; m < inst.size(); m++) // po rozmiarze tablicy instancji
@@ -1017,7 +1046,7 @@ int main()
 				if (rand() % 100 < procent_mutacji)
 				{
 					tie(ignore, ignore, m1_operacje, m2_operacje, m1_operacje_drugie, m2_operacje_drugie, m1_kolejnosc, m2_kolejnosc) = inst[m];
-					co_mutowac = rand() % 4;
+					co_mutowac = rand() % 2;
 					//cout << "co_mutowac = " << co_mutowac << endl;
 					switch (co_mutowac)
 					{
@@ -1029,16 +1058,6 @@ int main()
 						case 1:
 						{
 							mutacja(m2_operacje);
-							break;
-						}
-						case 2:
-						{
-							mutacja(m1_operacje_drugie);
-							break;
-						}
-						case 3:
-						{
-							mutacja(m2_operacje_drugie);
 							break;
 						}
 					}
@@ -1066,7 +1085,7 @@ int main()
 
 		wypelnij_idle(m1);
 		wypelnij_idle(m2);
-		wynik.open(nazwa_rozw + to_string(i) + ".txt", ios::out | ios::trunc);
+		wynik.open(nazwa_rozw + to_string(i) + "___" + to_string(1 + licznik % 16) + ".txt", ios::out | ios::trunc);
 		wynik << max(m1[m1.size() - 1].czas_konca, m2[m2.size() - 1].czas_konca) << ", " << czas_poczatkowy << endl;
 		suma_idle_M1 = 0;
 		suma_maint_M1 = 0;
@@ -1123,8 +1142,7 @@ int main()
 		m2_operacje_drugie.clear();
 		m1_kolejnosc.clear();
 		m2_kolejnosc.clear();
+		licznik++;
 	}
-	par_heur.close();
-
 }
 
